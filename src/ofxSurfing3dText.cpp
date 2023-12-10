@@ -17,10 +17,14 @@ ofxSurfing3dText::~ofxSurfing3dText() {
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::setup() {
-	font.load("frabk.ttf", 164, true, true, true);
+	//string p = "assets/fonts/frabk.ttf";
+	string p = "assets/fonts/NotoSansMono-Regular.ttf";
+
+	font.load(p, 164, true, true, true);
 
 	message = "eternteinment";
 	//message = "openframeworks";
+
 	stringToMeshNodes(message, 100.0);
 }
 
@@ -463,8 +467,23 @@ void ofxSurfing3dText::stringToMeshNodes(string astring, float extrudeAmount) {
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::keyPressed(int key) {
-
 	bool bRebuildMeshes = false;
+
+	if (key == OF_KEY_UP) {
+		extrusion += 10;
+		bRebuildMeshes = true;
+	}
+	else if (key == OF_KEY_DOWN) {
+		extrusion -= 10;
+		if (extrusion < 0) {
+			extrusion = 0;
+		}
+		bRebuildMeshes = true;
+	}
+
+	bool b = 0;
+	if (!b) return;
+
 
 	if (key == OF_KEY_DEL || key == 8) {
 		if (message.length() > 0) {
@@ -473,16 +492,7 @@ void ofxSurfing3dText::keyPressed(int key) {
 		}
 	} else if (key == OF_KEY_RETURN || key == 13) {
 		message += "\n";
-	} else if (key == OF_KEY_UP) {
-		extrusion += 10;
-		bRebuildMeshes = true;
-	} else if (key == OF_KEY_DOWN) {
-		extrusion -= 10;
-		if (extrusion < 0) {
-			extrusion = 0;
-		}
-		bRebuildMeshes = true;
-	} else if (key < 300) {
+	}  else if (key < 300) {
 		unsigned char letter = (unsigned char)key;
 		message += (letter);
 		bRebuildMeshes = true;

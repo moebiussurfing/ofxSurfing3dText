@@ -1,3 +1,25 @@
+/*
+
+	TODO
+
+	add sceneManager to pbr
+
+	use pbr manager
+		camera engine
+		floor plane / box modes
+
+	add params
+		2nd mode
+		b anim
+		b draw bounds
+		gui
+
+	chars spacing
+	uppercase
+	fonts browser
+
+*/
+
 #pragma once
 
 #include "ofMain.h"
