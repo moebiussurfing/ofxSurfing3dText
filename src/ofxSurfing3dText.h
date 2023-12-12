@@ -10,19 +10,21 @@
 
 	add params
 		2nd mode
-		b anim
-		b draw bounds
-		gui
 
 	chars spacing
-	uppercase
 	fonts browser
 
 */
 
+// NOTE: Path to mesh code copied from OF core
+// openFrameworks\examples\3d\pathsToMeshesExample
+
 #pragma once
 
 #include "ofMain.h"
+
+#include "ofxSurfingHelpersLite.h"
+//#include "ofxGui.h"
 
 class MeshNode {
 public:
@@ -73,48 +75,97 @@ public:
 	vector<ofPolyline> polylines;
 };
 
-class ofxSurfing3dText
-{
+class ofxSurfing3dText {
 public:
-
 	ofxSurfing3dText();
 	~ofxSurfing3dText();
 
 	void setup();
-	void exit();
-
-	void drawMeshes();
-	void drawBounds();
-	void drawHelp();
 
 private:
-	void update();
+	bool bFlagSetupFont = false;
+	void setupFont(string path = "");
+	uint64_t timeFlagSetupFont=0;
+	const uint64_t timeFlagSetupFontGap = 50; // delay in ms to reduce re calls..
+
+	bool bFlagSetupText= false;
+	void setupText(string text = "");
+	
+	void setupParams();
+
+public:
+	void exit();
+
 	void draw();
+	void drawMeshes();
+	void drawBounds();
+
+	void drawGui();
+	//void drawGui(ofxPanel * guiPtr = nullptr);
+
+private:
+	void refreshGui();
+
+	void drawHelp();
+	void buildHelp();
+
+	string sHelp = "";
+
+	void update();
+	void updateAnim();
 	void update(ofEventArgs & args);
-	void draw(ofEventArgs & args);
 
 	void keyPressed(int key);
-	void keyPressed(ofKeyEventArgs &eventArgs);
-
-	string path_Params_AppSettings = "ofxSurfing3dText_AppSettings.xml";
-	ofParameterGroup params_AppSettings;
-	ofParameter<bool> bKeys;
+	void keyPressed(ofKeyEventArgs & eventArgs);
 
 	ofTrueTypeFont font;
 	vector<MeshNode> meshNodes;
-
-	string message;
 
 	glm::vec3 meshMin;
 	glm::vec3 meshMax;
 	glm::vec3 meshCentroid = { 0, 0, 0 }; // can be used in place of glm::vec3(0,0,0);
 
-	float extrusion = 100;
+	void Changed(ofAbstractParameter & e);
+	void ChangedFont(ofAbstractParameter & e);
 
+public:
+	ofParameterGroup parameters;
+
+	ofParameterGroup fontParams;
+	ofParameter<string> textMessage;
+	ofParameter<string> pathFont;
+	ofParameter<string> nameFont;
+	ofParameter<float> extrusion;
+	ofParameter<float> letterSpacing;
+	ofParameter<float> heightLine;
+	ofParameter<float> sizeFont;
+	ofParameter<bool> bAnim;
+	ofParameter<bool> bUppercase;
+	ofParameter<int> indexMode;
+	ofParameter<void> vResetFont;
+	ofEventListener listenerResetFont;
+	void doResetFont();
+
+	ofParameterGroup internalParams;
+	ofParameter<bool> bGui;
+	ofParameter<bool> bKeys;
+	ofParameter<bool> bDebug;
+	ofParameter<bool> bHelp;
+
+	ofParameterGroup drawParams;
+	ofParameter<bool> bDrawMeshes;
+	ofParameter<bool> bDrawBounds;
+
+	ofxPanel gui;
+
+	string path = "ofxSurfing3dText_Settings.json";
+
+private:
 	void drawBounds(glm::vec3 min, glm::vec3 max, float size);
 	void stringToMeshNodes(string astring, float extrudeAmount);
 
-private:
+	SurfingAutoSaver autoSaver;
 
+	bool load();
+	void save();
 };
-

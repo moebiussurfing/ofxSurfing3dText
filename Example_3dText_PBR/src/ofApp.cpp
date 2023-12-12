@@ -1,10 +1,6 @@
 #include "ofApp.h"
 
 //--------------------------------------------------------------
-void ofApp::exit() {
-	//pbr.exit(); // Only required to save camera on exit
-}
-//--------------------------------------------------------------
 void ofApp::setup() {
 
 #if 1
@@ -17,11 +13,12 @@ void ofApp::setup() {
 
 		// Move and shape the window app.
 		// Customize settings: 60fps and vSync off.
-		ofxSurfing::setWindowAtMonitor(-1); // Move to left display and set landscape.
-		//ofxSurfing::setWindowAtMonitor(1, true); // Move to right display and set portrait.
-		//ofxSurfing::setWindowAtMonitor(); // Stay at main display (center in my setup) and landscape.
+		// Move to left display and set landscape.
+		ofxSurfing::setWindowAtMonitor(-1);
 	}
 #endif
+
+	t.setup();
 
 	//--
 
@@ -41,6 +38,13 @@ void ofApp::setup() {
 	sceneManager.addMaterial(nm);
 
 	sceneManager.setupBuild();
+}
+
+//--------------------------------------------------------------
+void ofApp::exit() {
+	ofLogNotice(__FUNCTION__);
+	
+	//pbr.exit(); // Only required to save camera on exit
 }
 
 //--------------------------------------------------------------
@@ -81,7 +85,7 @@ void ofApp::drawGui() {
 
 	ofDisableDepthTest();
 
-	t.drawHelp();
+	t.drawGui();
 
 	sceneManager.drawGui();
 
@@ -129,52 +133,18 @@ void ofApp::drawYourScene() {
 
 	//--
 
-	return;
 	ofDisableLighting();
+	
 	t.drawBounds();
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
+	ofLogNotice(__FUNCTION__) << " : " << key;
+
 	//pbr.keyPressed(key);
 }
 
 //--------------------------------------------------------------
-void ofApp::keyReleased(int key) {
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y) {
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button) {
-}
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button) {
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button) {
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y) {
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y) {
-}
-
-//--------------------------------------------------------------
 void ofApp::windowResized(int w, int h) {
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg) {
-}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo) {
 }

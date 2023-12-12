@@ -1,31 +1,238 @@
 #include "ofxSurfing3dText.h"
+
 //--------------------------------------------------------------
 ofxSurfing3dText::ofxSurfing3dText() {
-	ofAddListener(ofEvents().update, this, &ofxSurfing3dText::update);
-	ofAddListener(ofEvents().draw, this, &ofxSurfing3dText::draw);
-	ofAddListener(ofEvents().keyPressed, this, &ofxSurfing3dText::keyPressed);
+	ofLogNotice("ofxSurfing3dText") << "~ofxSurfing3dText() Constructor";
 
-	setup();
+	ofAddListener(ofEvents().update, this, &ofxSurfing3dText::update);
+	ofAddListener(ofEvents().keyPressed, this, &ofxSurfing3dText::keyPressed);
 }
 
 //--------------------------------------------------------------
 ofxSurfing3dText::~ofxSurfing3dText() {
+	ofLogNotice("ofxSurfing3dText") << "~ofxSurfing3dText() Destructor";
+
 	ofRemoveListener(ofEvents().update, this, &ofxSurfing3dText::update);
-	ofRemoveListener(ofEvents().draw, this, &ofxSurfing3dText::draw);
 	ofRemoveListener(ofEvents().keyPressed, this, &ofxSurfing3dText::keyPressed);
+
+	ofRemoveListener(parameters.parameterChangedE(), this, &ofxSurfing3dText::Changed);
+	ofRemoveListener(fontParams.parameterChangedE(), this, &ofxSurfing3dText::ChangedFont);
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::Changed(ofAbstractParameter & e) {
+
+	std::string name = e.getName();
+
+	ofLogVerbose("ofxSurfing3dText") << "Changed " << name << ": " << e;
+
+	if (e.isSerializable()) {
+		autoSaver.saveSoon();
+	}
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::ChangedFont(ofAbstractParameter & e) {
+
+	std::string name = e.getName();
+
+	ofLogVerbose("ofxSurfing3dText") << "ChangedFont " << name << ": " << e;
+
+	if (name == sizeFont.getName()) {
+		bFlagSetupFont = true;
+		timeFlagSetupFont = ofGetElapsedTimeMillis();
+	}
+
+	else if (name == pathFont.getName()) {
+		bFlagSetupFont = true;
+		timeFlagSetupFont = ofGetElapsedTimeMillis();
+	}
+
+	else if (name == letterSpacing.getName()) {
+		bFlagSetupFont = true;
+		timeFlagSetupFont = ofGetElapsedTimeMillis();
+	}
+
+	else if (name == heightLine.getName()) {
+		bFlagSetupFont = true;
+		timeFlagSetupFont = ofGetElapsedTimeMillis();
+	}
+
+	//-
+
+	if (name == textMessage.getName()) {
+		bFlagSetupText = true;
+	}
+
+	else if (name == bUppercase.getName()) {
+		bFlagSetupText = true;
+	}
+
+	else if (name == extrusion.getName()) {
+		bFlagSetupText = true;
+	}
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::save() {
+	ofLogNotice("ofxSurfing3dText") << "save -> " << path;
+
+	// save scene
+	ofxSurfing::saveSettings(parameters, path);
+}
+
+//--------------------------------------------------------------
+bool ofxSurfing3dText::load() {
+	ofLogNotice("ofxSurfing3dText") << "load -> " << path;
+
+	autoSaver.pause();
+
+	bool b = ofxSurfing::loadSettings(parameters, path);
+
+	autoSaver.start();
+
+	return b;
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::setupParams() {
+	ofLogNotice("ofxSurfingPBR") << "setupParams()";
+
+	nameFont.set("Font", "NotoSansMono-Regular.ttf");
+	pathFont.set("Path", "assets/fonts/NotoSansMono-Regular.ttf");
+
+	textMessage.set("Text", "Eternteinment");
+	extrusion.set("Extrusion", 100, 0, 1000);
+	sizeFont.set("Size font", 150, 20, 1000);
+	letterSpacing.set("Letter Spacing", 0, -1, 1);
+	heightLine.set("Height Line", 0, -1, 1);
+	indexMode.set("Mode", 0, 0, 1);
+	bAnim.set("Anim", false);
+	bUppercase.set("Uppercase", false);
+
+	bGui.set("UI 3dText", true);
+	bKeys.set("Keys", true);
+	bDrawMeshes.set("Draw", true);
+	bHelp.set("Help", true);
+	bDebug.set("Debug", true);
+	bDrawMeshes.set("Draw Meshes", true);
+	bDrawBounds.set("Draw Bounds", false);
+	vResetFont.set("Reset Font");
+
+	//-
+
+	parameters.setName("3dText");
+
+	drawParams.setName("DRAW");
+	drawParams.add(bDrawMeshes);
+	drawParams.add(bDrawBounds);
+	parameters.add(drawParams);
+
+	fontParams.setName("Font");
+	fontParams.add(textMessage);
+	fontParams.add(nameFont);
+	fontParams.add(pathFont);
+	fontParams.add(sizeFont);
+	fontParams.add(extrusion);
+	fontParams.add(letterSpacing);
+	fontParams.add(heightLine);
+	fontParams.add(bUppercase);
+	fontParams.add(bAnim);
+	fontParams.add(indexMode);
+	fontParams.add(vResetFont);
+	parameters.add(fontParams);
+
+	internalParams.setName("Internal");
+	internalParams.add(bGui);
+	internalParams.add(bHelp);
+	internalParams.add(bKeys);
+	internalParams.add(bDebug);
+	parameters.add(internalParams);
+
+	nameFont.setSerializable(false);
+
+	//-
+
+	gui.setup(parameters);
+
+	ofxSurfing::setGuiPositionToLayout(gui, ofxSurfing::SURFING_LAYOUT_TOP_RIGHT);
+
+	ofAddListener(parameters.parameterChangedE(), this, &ofxSurfing3dText::Changed);
+	ofAddListener(fontParams.parameterChangedE(), this, &ofxSurfing3dText::ChangedFont);
+
+	listenerResetFont = vResetFont.newListener([this](void) {
+		doResetFont();
+	});
+
+	callback_t f = std::bind(&ofxSurfing3dText::save, this);
+	autoSaver.setFunctionSaver(f);
+
+	load();
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::setupText(string text) {
+	ofLogNotice("ofxSurfingPBR") << "setupText() " << text;
+
+	if (text != "") {
+		textMessage.set(text);
+	}
+
+	string s = "";
+	if (bUppercase)
+		s = ofToUpper(textMessage);
+	else
+		s = textMessage;
+
+	stringToMeshNodes(s, extrusion);
+
+	buildHelp();
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::setupFont(string path) {
+	ofLogNotice("ofxSurfingPBR") << "setupFont() " << path;
+
+	if (path != "") {
+		pathFont.set(path);
+	}
+
+	// load(const of::filesystem::path& filename, int fontSize,
+	// bool antialiased, bool fullCharacterSet, bool makeContours,
+	// float simplifyAmt, int dpi)
+	bool b = font.load(pathFont.get(), sizeFont, true, true, true);
+
+	if (b) {
+		ofLogNotice("ofxSurfingPBR") << "Font successfully downloaded: " << pathFont;
+		nameFont = ofFilePath::getBaseName(pathFont.get());
+	} else {
+		ofLogError("ofxSurfingPBR") << "Error loading font: " << pathFont;
+		nameFont = "NONE";
+	}
+
+	bFlagSetupText = true;
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::doResetFont() {
+	ofLogNotice("ofxSurfingPBR") << "doResetFont()";
+
+	extrusion = 100;
+	sizeFont = 150;
+	letterSpacing = 0.f;
+	heightLine = 0.f;
+	indexMode = 0;
+	bAnim = false;
+	bUppercase = false;
 }
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::setup() {
-	//string p = "assets/fonts/frabk.ttf";
-	string p = "assets/fonts/NotoSansMono-Regular.ttf";
+	ofLogNotice("ofxSurfingPBR") << "setup()";
 
-	font.load(p, 164, true, true, true);
+	setupParams();
 
-	message = "eternteinment";
-	//message = "openframeworks";
-
-	stringToMeshNodes(message, 100.0);
+	setupFont();
 }
 
 //--------------------------------------------------------------
@@ -34,11 +241,27 @@ void ofxSurfing3dText::update(ofEventArgs & args) {
 }
 
 //--------------------------------------------------------------
-void ofxSurfing3dText::draw(ofEventArgs & args) {
+void ofxSurfing3dText::update() {
+
+	if (bAnim) updateAnim();
+
+	uint64_t t = ofGetElapsedTimeMillis() - timeFlagSetupFont;
+	if (bFlagSetupFont && t >= timeFlagSetupFontGap) {
+		bFlagSetupFont = false;
+
+		setupFont();
+	}
+
+	if (bFlagSetupText) {
+		bFlagSetupText = false;
+
+		setupText();
+	}
 }
 
 //--------------------------------------------------------------
-void ofxSurfing3dText::update() {
+void ofxSurfing3dText::updateAnim() {
+
 	float elapsedTime = ofGetElapsedTimef();
 	glm::vec3 axis(0, -1, 0);
 	if (ofGetFrameNum() % 200 < 100) {
@@ -53,95 +276,160 @@ void ofxSurfing3dText::update() {
 }
 
 //--------------------------------------------------------------
-void ofxSurfing3dText::drawHelp() {
+//void ofxSurfing3dText::drawGui(ofxPanel * guiPtr) {
+//if (guiPtr != nullptr) {
+//	glm::vec3 p;
+//	p = gui.getShape().getTopRight() + glm::vec2(SURFING__PAD_OFXGUI_BETWEEN_PANELS, 0);
+//}
+//}
 
+void ofxSurfing3dText::drawGui() {
+	if (!bGui) return;
 	ofDisableDepthTest();
 
-	ofSetColor(184, 180, 176);
-	string outString = "-- Type input string --";
-	outString += "\n" + message;
-	outString += "\n-----------------------";
-	outString += "\nExtrusion amount (up / down): " + ofToString(extrusion, 0);
-	ofDrawBitmapString(outString, 20, 20);
+	gui.draw();
+
+	drawHelp();
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::refreshGui() {
+	ofLogNotice("ofxSurfing3dText") << "refreshGui()";
+
+	// top-left
+	gui.setPosition(SURFING__PAD_TO_WINDOW_BORDERS, SURFING__PAD_TO_WINDOW_BORDERS);
+
+	// minimize sub panels
+
+	gui.getGroup(parameters.getName())
+		.getGroup(internalParams.getName())
+		.minimize();
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::buildHelp() {
+
+	ofLogNotice("ofxSurfingPBR") << "buildHelp()";
+
+	sHelp = "HELP 3D_TEXT";
+	sHelp += "\n\n";
+	sHelp += "TEXT:\n";
+	sHelp += textMessage.get();
+	sHelp += "\n\n";
+	sHelp += "UP/DOWN:\nExtrusion " + ofToString(extrusion.get(), 0);
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::drawHelp() {
+	if (!bHelp) return;
+
+	ofxSurfing::ofDrawBitmapStringBox(sHelp, ofxSurfing::SURFING_LAYOUT_BOTTOM_RIGHT);
 }
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::draw() {
-	drawMeshes();
-	drawBounds();
 
-#if 0 
-	ofPushStyle();
-	ofPushMatrix();
+	if (bDrawMeshes) drawMeshes();
+
+	if (bDrawBounds) drawBounds();
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::drawMeshes() {
+	if (!bDrawMeshes) return;
+
+	if (indexMode == 0) {
+		for (auto & meshNode : meshNodes) {
+			meshNode.node.transformGL();
+			meshNode.mesh.draw();
+			meshNode.node.restoreTransformGL();
+		}
+	}
+
+	else if (indexMode == 1) {
+		ofPushStyle();
+		ofPushMatrix();
 		float elapsedTime = ofGetElapsedTimef();
+
+		ofColor c = (255, 255);
+		float ow = 50;
 
 		for (auto & meshNode : meshNodes) {
 			ofPushMatrix();
 			ofTranslate(meshNode.node.getPosition());
-			ofTranslate(0, 0, -1000 - extrusion * 2);
 
-			ofSetColor(184, 180, 176);
+			//ofTranslate(0, 0, -1000 - extrusion * 2);
+			ofTranslate(0, 0, -(extrusion * 3) / 2.f);
+
+			//ofSetColor(184, 180, 176);
+			ofSetColor(c.r, c.g, c.b, 176);
 			for (auto & pline : meshNode.polylines) {
 				pline.draw();
 			}
 
-			float offset = 1.f - ofClamp(sinf(elapsedTime), 0, 1);
+			float offset;
+			if (bAnim)
+				offset = 1.f - ofClamp(sinf(elapsedTime), 0, 1);
+			else
+				offset = .25f;
 
-			ofTranslate(0, 0, 200 * offset);
-			ofSetColor(55, 206, 49);
+			//ofSetColor(55, 206, 49);
+			ofSetColor(c.r, c.g, c.b, 59);
+			ofTranslate(0, 0, 2 * ow * offset);
 			for (auto & mesh : meshNode.srcMeshes) {
 				mesh.draw();
 			}
 
-			ofSetColor(124, 120, 116);
-			ofTranslate(0, 0, 100.0 * offset + extrusion);
+			//ofSetColor(124, 120, 116);
+			ofSetColor(c.r, c.g, c.b, 116);
+			ofTranslate(0, 0, ow * offset + extrusion);
 			for (auto & mesh : meshNode.sideMeshes) {
 				mesh.draw();
 			}
 
-			ofTranslate(0, 0, 100 * offset);
-			ofSetColor(55, 206, 49);
+			//ofSetColor(55, 206, 49);
+			ofSetColor(c.r, c.g, c.b, 49);
+			ofTranslate(0, 0, ow * offset);
 			for (auto & mesh : meshNode.srcMeshes) {
 				mesh.draw();
 			}
 
 			ofPopMatrix();
 		}
-	ofPopMatrix();
-	ofPopStyle();
-#endif
-}
 
-//--------------------------------------------------------------
-void ofxSurfing3dText::drawMeshes() {
-	ofPushStyle();
-
-	for (auto & meshNode : meshNodes) {
-		meshNode.node.transformGL();
-		meshNode.mesh.draw();
-		meshNode.node.restoreTransformGL();
+		ofPopMatrix();
+		ofPopStyle();
 	}
-
-	ofPopStyle();
 }
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::drawBounds() {
+	if (!bDrawBounds) return;
+
 	ofPushStyle();
+	{
+		if (indexMode == 0) {
 
-	ofPushMatrix();
-	ofTranslate(-meshCentroid);
-	ofSetColor(184, 180, 176);
-	drawBounds(meshMin, meshMax, 100);
-	ofPopMatrix();
+			ofPushMatrix();
+			ofTranslate(-meshCentroid);
 
-	for (auto & meshNode : meshNodes) {
-		meshNode.node.transformGL();
-		ofSetColor(92, 237, 184);
-		drawBounds(meshNode.min, meshNode.max, 30);
-		meshNode.node.restoreTransformGL();
+			ofSetColor(0, 255);
+			//ofSetColor(184, 180, 176);
+
+			drawBounds(meshMin, meshMax, 100);
+			ofPopMatrix();
+
+			for (auto & meshNode : meshNodes) {
+				meshNode.node.transformGL();
+
+				ofSetColor(0, 255);
+				//ofSetColor(92, 237, 184);
+
+				drawBounds(meshNode.min, meshNode.max, 30);
+				meshNode.node.restoreTransformGL();
+			}
+		}
 	}
-
 	ofPopStyle();
 }
 
@@ -160,12 +448,6 @@ void ofxSurfing3dText::keyPressed(ofKeyEventArgs & eventArgs) {
 	keyPressed(key);
 
 	//--
-
-	//if (false) {}
-
-	//else if (key == 'G' && !mod_ALT)
-	//{
-	//}
 }
 
 //--------------------------------------------------------------
@@ -260,13 +542,42 @@ void ofxSurfing3dText::drawBounds(glm::vec3 min, glm::vec3 max, float size) {
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::stringToMeshNodes(string astring, float extrudeAmount) {
+	ofLogNotice("ofxSurfing3dText") << "stringToMeshNodes()";
 
 	meshNodes.clear();
 
 	if (astring == "") {
 		// the string does not have any characters so do not proceed
+		ofLogError("ofxSurfing3dText") << "Skip bc text is empty!";
 		return;
 	}
+
+	if (!font.isLoaded()) {
+		ofLogError("ofxSurfing3dText") << "Skip bc error as ofTrueTypeFont font not allocated!";
+		return;
+	}
+
+	// letterSpacing
+	const float spMin = 0.5f;
+	const float spMax = 4.f;
+	float sp = 1.f;
+	if (letterSpacing < 0)
+		sp = ofMap(letterSpacing, 0, -1, 1, spMin);
+	else if (letterSpacing > 0)
+		sp = ofMap(letterSpacing, 0, 1, 1, spMax);
+	font.setLetterSpacing(sp);
+
+	// heightLine
+	const float lhMax = 2.f;
+	float lh = 1.f;
+	if (heightLine < 0)
+		lh = ofMap(heightLine, 0, -1, 1, 1 / lhMax);
+	else if (heightLine > 0)
+		lh = ofMap(heightLine, 0, 1, 1, lhMax);
+	font.setLineHeight(lh);
+
+	//--
+
 	// get the font paths as filled
 	// we pass true as the third argument to request filled characters, so they have a mesh, but no outlines
 	vector<ofPath> fontPaths = font.getStringAsPoints(astring, true, true);
@@ -467,38 +778,38 @@ void ofxSurfing3dText::stringToMeshNodes(string astring, float extrudeAmount) {
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::keyPressed(int key) {
-	bool bRebuildMeshes = false;
+	if (!bKeys) return;
+
+	if (key == 'g') {
+		bGui = !bGui;
+	}
 
 	if (key == OF_KEY_UP) {
 		extrusion += 10;
-		bRebuildMeshes = true;
-	}
-	else if (key == OF_KEY_DOWN) {
+	} else if (key == OF_KEY_DOWN) {
 		extrusion -= 10;
 		if (extrusion < 0) {
 			extrusion = 0;
 		}
-		bRebuildMeshes = true;
 	}
 
-	bool b = 0;
-	if (!b) return;
+	//bool b = 0;
+	//if (!b) return;
 
+	//if (key == OF_KEY_DEL || key == 8) {
+	//	if (textMessage.get().length() > 0) {
+	//		textMessage.pop_back();
+	//		bRebuildMeshes = true;
+	//	}
+	//} else if (key == OF_KEY_RETURN || key == 13) {
+	//	textMessage += "\n";
+	//} else if (key < 300) {
+	//	unsigned char letter = (unsigned char)key;
+	//	textMessage += (letter);
+	//	bRebuildMeshes = true;
+	//}
 
-	if (key == OF_KEY_DEL || key == 8) {
-		if (message.length() > 0) {
-			message.pop_back();
-			bRebuildMeshes = true;
-		}
-	} else if (key == OF_KEY_RETURN || key == 13) {
-		message += "\n";
-	}  else if (key < 300) {
-		unsigned char letter = (unsigned char)key;
-		message += (letter);
-		bRebuildMeshes = true;
-	}
-
-	if (bRebuildMeshes) {
-		stringToMeshNodes(message, extrusion);
-	}
+	//if (bRebuildMeshes) {
+	//	stringToMeshNodes(textMessage, extrusion);
+	//}
 }
