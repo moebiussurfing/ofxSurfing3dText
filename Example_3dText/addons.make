@@ -1,1 +1,2 @@
+ofxGui
 ofxSurfing3dText

@@ -6,10 +6,11 @@ int main( ){
 
 	//Use ofGLFWWindowSettings for more options like multi-monitor fullscreen
 	ofGLWindowSettings settings;
-	settings.setSize(1200, 768);
+	settings.setSize(1280, 720);
 	settings.windowMode = OF_WINDOW; //can also be OF_FULLSCREEN
-	settings.setGLVersion(2, 1);  // Fixed pipeline
-	//settings.setGLVersion(3, 2);  // Programmable pipeline
+
+	//settings.setGLVersion(2, 1);  // Fixed pipeline
+	settings.setGLVersion(3, 2);  // Programmable pipeline
 
 	auto window = ofCreateWindow(settings);
 

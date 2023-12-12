@@ -427,6 +427,12 @@ void ofxSurfing3dText::drawMeshes() {
 void ofxSurfing3dText::drawBounds() {
 	if (!bDrawBounds) return;
 
+	ofColor c;
+
+	c = ofColor((255, 150));
+	//c = ofColor((0, 150));
+	//c = ofColor((184, 180, 176));
+
 	ofPushMatrix();
 	ofPushStyle();
 	{
@@ -436,8 +442,7 @@ void ofxSurfing3dText::drawBounds() {
 			{
 				ofTranslate(-meshCentroid);
 
-				ofSetColor(0, 255);
-				//ofSetColor(184, 180, 176);
+				ofSetColor(c);
 
 				drawBounds(meshMin, meshMax, 100);
 			}
@@ -446,8 +451,7 @@ void ofxSurfing3dText::drawBounds() {
 			for (auto & meshNode : meshNodes) {
 				meshNode.node.transformGL();
 
-				ofSetColor(0, 255);
-				//ofSetColor(92, 237, 184);
+				ofSetColor(c);
 
 				drawBounds(meshNode.min, meshNode.max, 30);
 				meshNode.node.restoreTransformGL();
