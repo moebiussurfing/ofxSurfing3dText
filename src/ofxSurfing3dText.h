@@ -4,16 +4,10 @@
 
 	add transform params zoom, pos, rot
 
-	add sceneManager to pbr
+	add sceneManager public methods to pbr
+		add material
+		begin/end material
 
-	use pbr manager
-		camera engine
-		floor plane / box modes
-
-	add params
-		2nd mode
-
-	chars spacing
 	fonts browser
 
 */

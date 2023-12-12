@@ -356,6 +356,7 @@ void ofxSurfing3dText::draw() {
 //--------------------------------------------------------------
 void ofxSurfing3dText::drawMeshes() {
 	if (!bDrawMeshes) return;
+	ofPushMatrix();
 
 	if (indexMode == 0) {
 		for (auto & meshNode : meshNodes) {
@@ -367,7 +368,7 @@ void ofxSurfing3dText::drawMeshes() {
 
 	else if (indexMode == 1) {
 		ofPushStyle();
-		ofPushMatrix();
+
 		float elapsedTime = ofGetElapsedTimef();
 
 		ofColor c = (255, 255);
@@ -416,9 +417,10 @@ void ofxSurfing3dText::drawMeshes() {
 			ofPopMatrix();
 		}
 
-		ofPopMatrix();
 		ofPopStyle();
 	}
+
+	ofPopMatrix();
 }
 
 //--------------------------------------------------------------

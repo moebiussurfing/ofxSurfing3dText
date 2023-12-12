@@ -60,7 +60,14 @@ void ofApp::drawMyScene() {
 
 	pbr.beginMaterial();
 	{
+		//// CULL the back faces of the geometry for rendering
+		//glEnable(GL_CULL_FACE);
+		//glFrontFace(GL_CW);
+		//glCullFace(GL_BACK);
+
 		t.drawMeshes();
+
+		//glDisable(GL_CULL_FACE);
 	}
 	pbr.endMaterial();
 
