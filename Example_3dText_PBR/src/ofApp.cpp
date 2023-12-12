@@ -4,47 +4,24 @@
 void ofApp::setup() {
 
 #if 1
-	// Theme
-	ofxSurfing::setOfxGuiTheme(); // Customize ofxGui theme.
+	// Customize ofxGui Theme
+	ofxSurfing::setOfxGuiTheme();
 
 	// App window
-	{
-		ofxSurfing::setWindowTitleAsProjectName(); // Name the window app.
-
-		// Move and shape the window app.
-		// Customize settings: 60fps and vSync off.
-		// Move to left display and set landscape.
-		ofxSurfing::setWindowAtMonitor(-1);
-	}
+	ofxSurfing::setWindowTitleAsProjectName();
+	ofxSurfing::setWindowAtMonitor(-1);
 #endif
 
 	t.setup();
 
 	//--
 
-	//// Pass the local camera
-	//pbr.setup(camera);
+	// Pass the local camera
+	pbr.setup(camera);
 
-	//// Pass the scene renderer to be processed
-	//callback_t f = std::bind(&ofApp::renderScene, this);
-	//pbr.setFunctionRenderScene(f);
-
-	// Pass render functions required to do the shadow passes!
+	// Pass the scene renderer to be processed
 	callback_t f = std::bind(&ofApp::renderScene, this);
-	sceneManager.setFunctionRenderScene(f);
-
-	string nm;
-	nm = "MAT_" + ofToString(0);
-	sceneManager.addMaterial(nm);
-
-	sceneManager.setupBuild();
-}
-
-//--------------------------------------------------------------
-void ofApp::exit() {
-	ofLogNotice(__FUNCTION__);
-	
-	//pbr.exit(); // Only required to save camera on exit
+	pbr.setFunctionRenderScene(f);
 }
 
 //--------------------------------------------------------------
@@ -61,23 +38,10 @@ void ofApp::draw() {
 
 //--------------------------------------------------------------
 void ofApp::drawScene() {
-	//pbr.draw();
 
 	ofEnableDepthTest();
 
-	sceneManager.updateLights();
-
-	camera.begin();
-	{
-		sceneManager.beginLights();
-		{
-			renderScene();
-
-			sceneManager.drawDebugLights();
-		}
-		sceneManager.endLights();
-	}
-	camera.end();
+	pbr.draw();
 }
 
 //--------------------------------------------------------------
@@ -85,66 +49,63 @@ void ofApp::drawGui() {
 
 	ofDisableDepthTest();
 
+	pbr.drawGui();
+
 	t.drawGui();
-
-	sceneManager.drawGui();
-
-	//pbr.drawGui();
 }
 
 //--------------------------------------------------------------
 void ofApp::renderScene() {
-	//// The camera is internal!
 
-	//// Plane floor (Material A / simple)
-	//// don't need to begin/end material manually.
-	//pbr.drawPlane();
+	ofEnableDepthTest();
 
-	//// For other objects (Material B / full parameters)
-	//pbr.beginMaterial();
-	//{
-		drawYourScene();
-	//}
-	//pbr.endMaterial();
+	pbr.drawFloor();
 
-	//sceneManager.beginMaterial(0);
-
-	//sceneManager.endMaterial(0);
+	pbr.beginMaterial();
+	{
+		drawMyScene();
+	}
+	pbr.endMaterial();
 }
 
 //--------------------------------------------------------------
-void ofApp::drawYourScene() {
-	ofEnableLighting();
+void ofApp::drawMyScene() {
 
-	// Draws an internal bundled testing scene with the three prims
-	//pbr.drawTestScene();
+	//ofEnableLighting();
 
-	//pbr.beginMaterial();
-	//{
-	//t.drawMeshes();
-	//}
-	//pbr.endMaterial();
-
-	sceneManager.beginMaterial(0);
-	{
-		t.drawMeshes();
+	bool b = t.bDrawBounds || t.bDrawMeshes;
+	
+	if (!b) {
+		pbr.drawTestScene();
 	}
-	sceneManager.endMaterial(0);
+	
+	else {
+		pbr.beginMaterial();
+		{
+			t.drawMeshes();
+		}
+		pbr.endMaterial();
+	}
 
 	//--
 
-	ofDisableLighting();
-	
+	//ofDisableLighting();
 	t.drawBounds();
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
 	ofLogNotice(__FUNCTION__) << " : " << key;
-
-	//pbr.keyPressed(key);
 }
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h) {
+	ofLogNotice(__FUNCTION__) << w << "," << h;
+}
+
+//--------------------------------------------------------------
+void ofApp::exit() {
+	ofLogNotice(__FUNCTION__);
+
+	pbr.exit(); // Only required to save camera on exit
 }

@@ -2,6 +2,8 @@
 
 	TODO
 
+	add transform params zoom, pos, rot
+
 	add sceneManager to pbr
 
 	use pbr manager
@@ -92,6 +94,8 @@ private:
 	void setupText(string text = "");
 	
 	void setupParams();
+	void setupGui();
+	void startup();
 
 public:
 	void exit();

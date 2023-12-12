@@ -98,8 +98,8 @@ bool ofxSurfing3dText::load() {
 void ofxSurfing3dText::setupParams() {
 	ofLogNotice("ofxSurfingPBR") << "setupParams()";
 
-	nameFont.set("Font", "NotoSansMono-Regular.ttf");
-	pathFont.set("Path", "assets/fonts/NotoSansMono-Regular.ttf");
+	pathFont.set("P", "assets/fonts/NotoSansMono-Regular.ttf");
+	nameFont.set("N", "NotoSansMono-Regular.ttf");//hardcode
 
 	textMessage.set("Text", "Eternteinment");
 	extrusion.set("Extrusion", 100, 0, 1000);
@@ -130,15 +130,15 @@ void ofxSurfing3dText::setupParams() {
 
 	fontParams.setName("Font");
 	fontParams.add(textMessage);
-	fontParams.add(nameFont);
-	fontParams.add(pathFont);
 	fontParams.add(sizeFont);
 	fontParams.add(extrusion);
 	fontParams.add(letterSpacing);
 	fontParams.add(heightLine);
 	fontParams.add(bUppercase);
-	fontParams.add(bAnim);
 	fontParams.add(indexMode);
+	fontParams.add(bAnim);
+	fontParams.add(nameFont);
+	fontParams.add(pathFont);
 	fontParams.add(vResetFont);
 	parameters.add(fontParams);
 
@@ -153,10 +153,6 @@ void ofxSurfing3dText::setupParams() {
 
 	//-
 
-	gui.setup(parameters);
-
-	ofxSurfing::setGuiPositionToLayout(gui, ofxSurfing::SURFING_LAYOUT_TOP_RIGHT);
-
 	ofAddListener(parameters.parameterChangedE(), this, &ofxSurfing3dText::Changed);
 	ofAddListener(fontParams.parameterChangedE(), this, &ofxSurfing3dText::ChangedFont);
 
@@ -166,6 +162,29 @@ void ofxSurfing3dText::setupParams() {
 
 	callback_t f = std::bind(&ofxSurfing3dText::save, this);
 	autoSaver.setFunctionSaver(f);
+
+	//--
+
+	setupGui();
+	
+	startup();
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::setupGui() {
+	ofLogNotice("ofxSurfingPBR") << "setupGui()";
+
+	gui.setup(parameters);
+
+	ofxSurfing::setGuiPositionToLayout(gui, ofxSurfing::SURFING_LAYOUT_TOP_RIGHT);
+
+	gui.getGroup(internalParams.getName()).minimize();
+	gui.getGroup(drawParams.getName()).minimize();
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::startup() {
+	ofLogNotice("ofxSurfingPBR") << "startup()";
 
 	load();
 }
@@ -323,7 +342,7 @@ void ofxSurfing3dText::buildHelp() {
 void ofxSurfing3dText::drawHelp() {
 	if (!bHelp) return;
 
-	ofxSurfing::ofDrawBitmapStringBox(sHelp, ofxSurfing::SURFING_LAYOUT_BOTTOM_RIGHT);
+	ofxSurfing::ofDrawBitmapStringBox(sHelp, ofxSurfing::SURFING_LAYOUT_BOTTOM_CENTER);
 }
 
 //--------------------------------------------------------------
@@ -446,8 +465,6 @@ void ofxSurfing3dText::keyPressed(ofKeyEventArgs & eventArgs) {
 	ofLogNotice(__FUNCTION__) << " : " << key;
 
 	keyPressed(key);
-
-	//--
 }
 
 //--------------------------------------------------------------
