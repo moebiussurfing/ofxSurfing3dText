@@ -26,5 +26,4 @@ class ofApp : public ofBaseApp {
 
 		void renderScene();
 		void drawMyScene();
-
 };

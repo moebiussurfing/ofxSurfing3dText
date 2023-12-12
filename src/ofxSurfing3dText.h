@@ -139,7 +139,7 @@ public:
 	ofParameter<string> textMessage;
 	ofParameter<string> pathFont;
 	ofParameter<string> nameFont;
-	ofParameter<float> extrusion;
+	ofParameter<int> extrusion;
 	ofParameter<float> letterSpacing;
 	ofParameter<float> heightLine;
 	ofParameter<float> sizeFont;

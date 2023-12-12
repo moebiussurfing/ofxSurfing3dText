@@ -4,10 +4,7 @@
 void ofApp::setup() {
 
 #if 1
-	// Customize ofxGui Theme
 	ofxSurfing::setOfxGuiTheme();
-
-	// App window
 	ofxSurfing::setWindowTitleAsProjectName();
 	ofxSurfing::setWindowAtMonitor(-1);
 #endif
@@ -16,10 +13,8 @@ void ofApp::setup() {
 
 	//--
 
-	// Pass the local camera
 	pbr.setup(camera);
 
-	// Pass the scene renderer to be processed
 	callback_t f = std::bind(&ofApp::renderScene, this);
 	pbr.setFunctionRenderScene(f);
 }
@@ -39,15 +34,11 @@ void ofApp::draw() {
 //--------------------------------------------------------------
 void ofApp::drawScene() {
 
-	ofEnableDepthTest();
-
 	pbr.draw();
 }
 
 //--------------------------------------------------------------
 void ofApp::drawGui() {
-
-	ofDisableDepthTest();
 
 	pbr.drawGui();
 
@@ -57,39 +48,22 @@ void ofApp::drawGui() {
 //--------------------------------------------------------------
 void ofApp::renderScene() {
 
-	ofEnableDepthTest();
-
-	pbr.drawFloor();
-
-	pbr.beginMaterial();
-	{
-		drawMyScene();
-	}
-	pbr.endMaterial();
+	drawMyScene();
 }
 
 //--------------------------------------------------------------
 void ofApp::drawMyScene() {
 
-	//ofEnableLighting();
+	pbr.drawFloor();
 
-	bool b = t.bDrawBounds || t.bDrawMeshes;
-	
-	if (!b) {
-		pbr.drawTestScene();
+	pbr.drawTestScene();
+
+	pbr.beginMaterial();
+	{
+		t.drawMeshes();
 	}
-	
-	else {
-		pbr.beginMaterial();
-		{
-			t.drawMeshes();
-		}
-		pbr.endMaterial();
-	}
+	pbr.endMaterial();
 
-	//--
-
-	//ofDisableLighting();
 	t.drawBounds();
 }
 

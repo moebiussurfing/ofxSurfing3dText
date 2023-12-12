@@ -99,7 +99,7 @@ void ofxSurfing3dText::setupParams() {
 	ofLogNotice("ofxSurfingPBR") << "setupParams()";
 
 	pathFont.set("P", "assets/fonts/NotoSansMono-Regular.ttf");
-	nameFont.set("N", "NotoSansMono-Regular.ttf");//hardcode
+	nameFont.set("N", "NotoSansMono-Regular.ttf"); //hardcode
 
 	textMessage.set("Text", "Eternteinment");
 	extrusion.set("Extrusion", 100, 0, 1000);
@@ -166,7 +166,7 @@ void ofxSurfing3dText::setupParams() {
 	//--
 
 	setupGui();
-	
+
 	startup();
 }
 
@@ -425,17 +425,20 @@ void ofxSurfing3dText::drawMeshes() {
 void ofxSurfing3dText::drawBounds() {
 	if (!bDrawBounds) return;
 
+	ofPushMatrix();
 	ofPushStyle();
 	{
 		if (indexMode == 0) {
 
 			ofPushMatrix();
-			ofTranslate(-meshCentroid);
+			{
+				ofTranslate(-meshCentroid);
 
-			ofSetColor(0, 255);
-			//ofSetColor(184, 180, 176);
+				ofSetColor(0, 255);
+				//ofSetColor(184, 180, 176);
 
-			drawBounds(meshMin, meshMax, 100);
+				drawBounds(meshMin, meshMax, 100);
+			}
 			ofPopMatrix();
 
 			for (auto & meshNode : meshNodes) {
@@ -450,6 +453,7 @@ void ofxSurfing3dText::drawBounds() {
 		}
 	}
 	ofPopStyle();
+	ofPopMatrix();
 }
 
 //--------------------------------------------------------------
