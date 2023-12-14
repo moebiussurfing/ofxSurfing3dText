@@ -70,20 +70,20 @@ void ofApp::drawScene() {
 		material.end();
 		t.drawBounds();
 
-		if (bEnableLights) {
-			ofDisableLighting();
-		}
+		if (bEnableLights) ofDisableLighting();
 
 		// debug
-		ofPushStyle();
-		for (int i = 0; i < (int)pointLights.size(); i++) {
-			ofSetColor(pointLights[i]->getDiffuseColor());
-			if (!pointLights[i]->getIsEnabled()) {
-				ofSetColor(40);
+		if (t.bDebug) {
+			ofPushStyle();
+			for (int i = 0; i < (int)pointLights.size(); i++) {
+				ofSetColor(pointLights[i]->getDiffuseColor());
+				if (!pointLights[i]->getIsEnabled()) {
+					ofSetColor(40);
+				}
+				pointLights[i]->draw();
 			}
-			pointLights[i]->draw();
+			ofPopStyle();
 		}
-		ofPopStyle();
 	}
 	camera.end();
 }

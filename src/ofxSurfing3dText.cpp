@@ -125,7 +125,7 @@ void ofxSurfing3dText::setupParams() {
 
 	heightLine.set("Height Line", 0, -1, 1);
 	indexMode.set("Mode", 0, 0, 1);
-	bAnim.set("Anim", false);
+	bAnim.set("Animate", false);
 	bUppercase.set("Uppercase", false);
 	color.set("Color", ofColor(128, 255), ofColor(0, 0), ofColor(255, 255));
 
@@ -170,7 +170,7 @@ void ofxSurfing3dText::setupParams() {
 	parameters.add(fontParams);
 
 	internalParams.setName("Internal");
-	internalParams.add(bGui);
+	//internalParams.add(bGui);
 	internalParams.add(bHelp);
 	internalParams.add(bKeys);
 	internalParams.add(bDebug);
@@ -369,7 +369,12 @@ void ofxSurfing3dText::buildHelp() {
 	sHelp += "TEXT:\n";
 	sHelp += textMessage.get();
 	sHelp += "\n\n";
-	sHelp += "UP/DOWN:\nExtrusion " + ofToString(extrusion.get(), 0);
+	sHelp += "g: Gui\n";
+	sHelp += "d: Debug\n";
+	sHelp += "u: Uppercase\n";
+	sHelp += "a: Animate\n";
+	sHelp += "\n\n";
+	sHelp += "Up/Down:\nExtrusion " + ofToString(extrusion.get(), 0);
 }
 
 //--------------------------------------------------------------
@@ -458,6 +463,7 @@ void ofxSurfing3dText::drawMeshes() {
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::drawBounds() {
+	if (!bDebug) return;
 	if (!bDrawBounds && !bDrawBox) return;
 
 	ofColor c;
@@ -497,21 +503,6 @@ void ofxSurfing3dText::drawBounds() {
 		}
 	}
 	ofPopStyle();
-}
-
-//--------------------------------------------------------------
-void ofxSurfing3dText::keyPressed(ofKeyEventArgs & eventArgs) {
-	const int key = eventArgs.key;
-
-	// modifiers
-	bool mod_COMMAND = eventArgs.hasModifier(OF_KEY_COMMAND);
-	bool mod_CONTROL = eventArgs.hasModifier(OF_KEY_CONTROL);
-	bool mod_ALT = eventArgs.hasModifier(OF_KEY_ALT);
-	bool mod_SHIFT = eventArgs.hasModifier(OF_KEY_SHIFT);
-
-	ofLogNotice(__FUNCTION__) << " : " << key;
-
-	keyPressed(key);
 }
 
 //--------------------------------------------------------------
@@ -846,11 +837,35 @@ void ofxSurfing3dText::stringToMeshNodes(string astring, float extrudeAmount) {
 }
 
 //--------------------------------------------------------------
+void ofxSurfing3dText::keyPressed(ofKeyEventArgs & eventArgs) {
+	const int key = eventArgs.key;
+
+	// modifiers
+	bool mod_COMMAND = eventArgs.hasModifier(OF_KEY_COMMAND);
+	bool mod_CONTROL = eventArgs.hasModifier(OF_KEY_CONTROL);
+	bool mod_ALT = eventArgs.hasModifier(OF_KEY_ALT);
+	bool mod_SHIFT = eventArgs.hasModifier(OF_KEY_SHIFT);
+
+	ofLogNotice(__FUNCTION__) << " : " << key;
+
+	keyPressed(key);
+}
+
+//--------------------------------------------------------------
 void ofxSurfing3dText::keyPressed(int key) {
 	if (!bKeys) return;
 
 	if (key == 'g') {
 		bGui = !bGui;
+	}
+	if (key == 'd') {
+		bDebug = !bDebug;
+	}
+	if (key == 'u') {
+		bUppercase = !bUppercase;
+	}
+	if (key == 'a') {
+		bAnim = !bAnim;
 	}
 
 	if (key == OF_KEY_UP) {
