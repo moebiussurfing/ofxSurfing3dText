@@ -52,7 +52,6 @@ void ofxSurfing3dText::ChangedFont(ofAbstractParameter & e) {
 		bFlagSetupText = true;
 	}
 
-	
 #ifdef SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
 	else if (name == lineWidth.getName()) {
 		if (!font.isLoaded()) return;
@@ -128,6 +127,7 @@ void ofxSurfing3dText::setupParams() {
 	indexMode.set("Mode", 0, 0, 1);
 	bAnim.set("Anim", false);
 	bUppercase.set("Uppercase", false);
+	color.set("Color", ofColor(128, 255), ofColor(0, 0), ofColor(255, 255));
 
 	bGui.set("UI 3dText", true);
 	bKeys.set("Keys", true);
@@ -136,6 +136,7 @@ void ofxSurfing3dText::setupParams() {
 	bDebug.set("Debug", true);
 	bDrawMeshes.set("Draw Meshes", true);
 	bDrawBounds.set("Draw Bounds", false);
+	bDrawBox.set("Draw Box", false);
 	vResetFont.set("Reset Font");
 
 	//-
@@ -144,11 +145,13 @@ void ofxSurfing3dText::setupParams() {
 
 	drawParams.setName("DRAW");
 	drawParams.add(bDrawMeshes);
+	drawParams.add(bDrawBox);
 	drawParams.add(bDrawBounds);
 	parameters.add(drawParams);
 
 	fontParams.setName("Font");
 	fontParams.add(textMessage);
+	fontParams.add(color);
 	fontParams.add(sizeFont);
 	fontParams.add(extrusion);
 
@@ -260,6 +263,7 @@ void ofxSurfing3dText::setupFont(string path) {
 void ofxSurfing3dText::doResetFont() {
 	ofLogNotice("ofxSurfingPBR") << "doResetFont()";
 
+	color = ofColor(128, 255);
 	extrusion = 100;
 	sizeFont = 150;
 	letterSpacing = 0.f;
@@ -267,6 +271,8 @@ void ofxSurfing3dText::doResetFont() {
 	indexMode = 0;
 	bAnim = false;
 	bUppercase = false;
+	bDrawBox = true;
+	bDrawBounds = false;
 
 #ifdef SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
 	lineWidth = 1000;
@@ -358,7 +364,7 @@ void ofxSurfing3dText::buildHelp() {
 
 	ofLogNotice("ofxSurfingPBR") << "buildHelp()";
 
-	sHelp = "HELP 3D_TEXT";
+	sHelp = "HELP\n3D_TEXT";
 	sHelp += "\n\n";
 	sHelp += "TEXT:\n";
 	sHelp += textMessage.get();
@@ -376,9 +382,8 @@ void ofxSurfing3dText::drawHelp() {
 //--------------------------------------------------------------
 void ofxSurfing3dText::draw() {
 
-	if (bDrawMeshes) drawMeshes();
-
-	if (bDrawBounds) drawBounds();
+	drawMeshes();
+	drawBounds();
 }
 
 //--------------------------------------------------------------
@@ -453,41 +458,45 @@ void ofxSurfing3dText::drawMeshes() {
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::drawBounds() {
-	if (!bDrawBounds) return;
+	if (!bDrawBounds && !bDrawBox) return;
 
 	ofColor c;
 
-	c = ofColor((255, 150));//white
-	//c = ofColor((0, 150));//black
-	//c = ofColor((184, 180, 176));
+	int a = 150;
+	//int a = ofMap(glm::sin(ofGetElapsedTimef()), -1, 1, 0, 200);
 
-	ofPushMatrix();
+	c = ofColor(255, a); //white
+	//c = ofColor(0, a);//black
+
 	ofPushStyle();
 	{
 		if (indexMode == 0) {
 
-			ofPushMatrix();
-			{
-				ofTranslate(-meshCentroid);
+			if (bDrawBox) {
+				ofPushMatrix();
+				{
+					ofTranslate(-meshCentroid);
 
-				ofSetColor(c);
+					ofSetColor(c);
 
-				drawBounds(meshMin, meshMax, 100);
+					drawBounds(meshMin, meshMax, 100);
+				}
+				ofPopMatrix();
 			}
-			ofPopMatrix();
 
-			for (auto & meshNode : meshNodes) {
-				meshNode.node.transformGL();
+			if (bDrawBounds) {
+				for (auto & meshNode : meshNodes) {
+					meshNode.node.transformGL();
 
-				ofSetColor(c);
+					ofSetColor(c);
 
-				drawBounds(meshNode.min, meshNode.max, 30);
-				meshNode.node.restoreTransformGL();
+					drawBounds(meshNode.min, meshNode.max, 30);
+					meshNode.node.restoreTransformGL();
+				}
 			}
 		}
 	}
 	ofPopStyle();
-	ofPopMatrix();
 }
 
 //--------------------------------------------------------------
@@ -586,6 +595,13 @@ void ofxSurfing3dText::drawBounds(glm::vec3 min, glm::vec3 max, float size) {
 }
 
 //--------------------------------------------------------------
+glm::vec3 ofxSurfing3dText::getBoundBoxShape() const {
+	glm::vec3 p;
+	p = (meshMax - meshMin);
+	return p;
+}
+
+//--------------------------------------------------------------
 void ofxSurfing3dText::stringToMeshNodes(string astring, float extrudeAmount) {
 	ofLogNotice("ofxSurfing3dText") << "stringToMeshNodes()";
 
@@ -606,10 +622,9 @@ void ofxSurfing3dText::stringToMeshNodes(string astring, float extrudeAmount) {
 	font.setLetterSpacing(letterSpacing);
 	font.setSpaceSize(font.getSpaceSize() * letterSpacing);
 
-	
 #ifndef SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
 	// letterSpacing
-	const float spMin = 0.5f;
+	const float spMin = 0.2f;
 	const float spMax = 4.f;
 	float sp = 1.f;
 	if (letterSpacing < 0)
@@ -620,12 +635,14 @@ void ofxSurfing3dText::stringToMeshNodes(string astring, float extrudeAmount) {
 #endif
 
 	// heightLine
-	const float lhMax = 2.f;
-	float lh = 1.f;
+	const float lZero = 1.4f * sizeFont;
+	const float lhMin = 0.2f * sizeFont;
+	const float lhMax = 3.f * sizeFont;
+	float lh = lZero;
 	if (heightLine < 0)
-		lh = ofMap(heightLine, 0, -1, 1, 1 / lhMax);
+		lh = ofMap(heightLine, 0, -1, lZero, lhMin);
 	else if (heightLine > 0)
-		lh = ofMap(heightLine, 0, 1, 1, lhMax);
+		lh = ofMap(heightLine, 0, 1, lZero, lhMax);
 	font.setLineHeight(lh);
 
 	//--
@@ -838,6 +855,7 @@ void ofxSurfing3dText::keyPressed(int key) {
 
 	if (key == OF_KEY_UP) {
 		extrusion += 10;
+		if (extrusion > extrusion.getMax()) extrusion = extrusion.getMax();
 	} else if (key == OF_KEY_DOWN) {
 		extrusion -= 10;
 		if (extrusion < 0) {

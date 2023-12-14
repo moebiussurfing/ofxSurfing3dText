@@ -83,12 +83,12 @@ public:
 private:
 	bool bFlagSetupFont = false;
 	void setupFont(string path = "");
-	uint64_t timeFlagSetupFont=0;
+	uint64_t timeFlagSetupFont = 0;
 	const uint64_t timeFlagSetupFontGap = 50; // delay in ms to reduce re calls..
 
-	bool bFlagSetupText= false;
+	bool bFlagSetupText = false;
 	void setupText(string text = "");
-	
+
 	void setupParams();
 	void setupGui();
 	void startup();
@@ -129,6 +129,9 @@ private:
 	void ChangedFont(ofAbstractParameter & e);
 
 public:
+	glm::vec3 getBoundBoxShape() const;
+
+public:
 	ofParameterGroup parameters;
 
 	ofParameterGroup fontParams;
@@ -143,6 +146,7 @@ public:
 	ofParameter<bool> bUppercase;
 	ofParameter<int> indexMode;
 	ofParameter<void> vResetFont;
+	ofParameter<ofFloatColor> color;
 	ofEventListener listenerResetFont;
 	void doResetFont();
 
@@ -159,6 +163,7 @@ public:
 	ofParameterGroup drawParams;
 	ofParameter<bool> bDrawMeshes;
 	ofParameter<bool> bDrawBounds;
+	ofParameter<bool> bDrawBox;
 
 	ofxPanel gui;
 

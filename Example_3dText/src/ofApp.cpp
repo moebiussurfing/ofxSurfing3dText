@@ -7,8 +7,6 @@ void ofApp::setup() {
 
 	setupLights();
 
-	material.setAmbientColor(ofColor(247, 59, 103));
-	material.setDiffuseColor(ofColor(247, 59, 103));
 	material.setSpecularColor(ofFloatColor(1.0, 1.0));
 	material.setShininess(100);
 
@@ -22,10 +20,6 @@ void ofApp::setup() {
 void ofApp::setupLights() {
 	ofSetSmoothLighting(true);
 
-	float xdist = 1200;
-	float ty = 500;
-	float tz = 500;
-
 	for (int i = 0; i < OF_APP__NUM_LIGHTS; i++) {
 		auto pointLight = make_shared<ofLight>();
 		pointLight->setup();
@@ -34,8 +28,6 @@ void ofApp::setupLights() {
 		pointLight->setDiffuseColor(ofColor(0.f, 255.f, 0.f));
 		pointLight->setAmbientColor(ofFloatColor(0.2f));
 		pointLight->setSpecularColor(ofColor(255.f, 255.f, 255.f));
-		float tx = ofMap(i, 0, OF_APP__NUM_LIGHTS - 1, -xdist * 0.5, xdist * 0.5f);
-		pointLight->setPosition(tx, ty, tz);
 		pointLight->setAttenuation(1.0, 0.00001, 0.00001);
 		pointLights.push_back(pointLight);
 	}
@@ -112,9 +104,9 @@ void ofApp::drawGui() {
 void ofApp::updateLights() {
 	if (!bEnableLights) return;
 
-	//--
-
-	float h = 100;
+	//float xdist = 1200;
+	float xdist = t.getBoundBoxShape().x;
+	float hmax = 100;
 
 	float deltaTime = ofClamp(ofGetLastFrameTime(), 1.f / 5000.f, 1.f / 5.f);
 	angle += deltaTime;
@@ -125,14 +117,20 @@ void ofApp::updateLights() {
 	}
 	lightColor.setHue(colorHue);
 
-	for (int i = 0; i < (int)pointLights.size(); i++) {
+	for (int i = 0; i < (int)pointLights.size(); i++) 
+	{
 		auto & l = pointLights[i];
 		lightColor.setHue(ofWrap(colorHue + (float)i * 12.5, 0, 255.f));
 		l->setDiffuseColor(lightColor);
 
-		float positionY = sin(angle + (float)i * cos(angle * 0.05) * 1.9f) * h;
-		l->setPosition(l->getX(), positionY, 200.0);
+		float tx = ofMap(i, 0, OF_APP__NUM_LIGHTS - 1, -xdist * 0.5, xdist * 0.5f);
+		float ty = sin(angle + (float)i * cos(angle * 0.05) * 1.9f) * hmax;
+		float tz = 50 + t.extrusion;
+		l->setPosition(tx, ty, tz);
 	}
+		
+	material.setAmbientColor(t.color);
+	material.setDiffuseColor(t.color);
 }
 
 //--------------------------------------------------------------
