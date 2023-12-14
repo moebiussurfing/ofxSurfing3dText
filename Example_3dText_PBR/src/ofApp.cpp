@@ -56,10 +56,10 @@ void ofApp::drawMyScene() {
 
 	pbr.drawFloor();
 
-	pbr.drawTestScene();
-
 	pbr.beginMaterial();
 	{
+		pbr.drawTestScene();
+
 		//// CULL the back faces of the geometry for rendering
 		//glEnable(GL_CULL_FACE);
 		//glFrontFace(GL_CW);

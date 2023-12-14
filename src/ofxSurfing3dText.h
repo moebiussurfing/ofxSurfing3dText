@@ -3,6 +3,7 @@
 	TODO
 
 	add transform params zoom, pos, rot
+		node ofParam class
 
 	add sceneManager public methods to pbr
 		add material
@@ -20,7 +21,8 @@
 #include "ofMain.h"
 
 #include "ofxSurfingHelpersLite.h"
-//#include "ofxGui.h"
+
+//#define SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
 
 class MeshNode {
 public:
@@ -143,6 +145,10 @@ public:
 	ofParameter<void> vResetFont;
 	ofEventListener listenerResetFont;
 	void doResetFont();
+
+#ifdef SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
+	ofParameter<int> lineWidth;
+#endif
 
 	ofParameterGroup internalParams;
 	ofParameter<bool> bGui;

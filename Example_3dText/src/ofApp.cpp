@@ -2,7 +2,8 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-	//ofxSurfing::setWindowAtMonitor(-1);
+	ofxSurfing::setOfxGuiTheme();
+	ofxSurfing::setWindowAtMonitor(-1);
 
 	setupLights();
 
@@ -66,11 +67,10 @@ void ofApp::drawScene() {
 
 	ofEnableDepthTest();
 
-	if (bEnableLights) ofEnableLighting();
-
 	camera.begin();
 	{
-		ofEnableLighting();
+		if (bEnableLights) ofEnableLighting();
+
 		material.begin();
 		{
 			t.drawMeshes();
@@ -78,7 +78,9 @@ void ofApp::drawScene() {
 		material.end();
 		t.drawBounds();
 
-		if (bEnableLights) ofDisableLighting();
+		if (bEnableLights) {
+			ofDisableLighting();
+		}
 
 		// debug
 		ofPushStyle();
@@ -108,6 +110,10 @@ void ofApp::drawGui() {
 
 //--------------------------------------------------------------
 void ofApp::updateLights() {
+	if (!bEnableLights) return;
+
+	//--
+
 	float h = 100;
 
 	float deltaTime = ofClamp(ofGetLastFrameTime(), 1.f / 5000.f, 1.f / 5.f);
@@ -142,9 +148,10 @@ void ofApp::buildHelp() {
 	s += "KEYS\n\n";
 	s += "HELP\n";
 	s += "H " + string(bHelp ? "ON" : "OFF") + "\n\n";
-	s += "DEBUG LIGHTS\n";
+	s += "LIGHTS\n\n";
+	s += "DEBUG\n";
 	s += "L " + string(bEnableLights ? "ON" : "OFF") + "\n\n";
-	s += "ENABLE LIGHT\n";
+	s += "ENABLE\n";
 	s += "1 " + string(b1 ? "ON" : "OFF") + "\n";
 	s += "2 " + string(b2 ? "ON" : "OFF") + "\n";
 	s += "3 " + string(b3 ? "ON" : "OFF") + "\n";
@@ -158,6 +165,13 @@ void ofApp::buildHelp() {
 void ofApp::keyPressed(int key) {
 	if (key == 'l' || key == 'L') {
 		bEnableLights = !bEnableLights;
+		for (int i = 0; i < (int)pointLights.size(); i++) {
+			auto & l = pointLights[i];
+			if (bEnableLights)
+				l->enable();
+			else
+				l->disable();
+		}
 		return;
 	}
 

@@ -41,26 +41,38 @@ void ofxSurfing3dText::ChangedFont(ofAbstractParameter & e) {
 	if (name == sizeFont.getName()) {
 		bFlagSetupFont = true;
 		timeFlagSetupFont = ofGetElapsedTimeMillis();
-	}
-
-	else if (name == pathFont.getName()) {
+	} else if (name == pathFont.getName()) {
 		bFlagSetupFont = true;
 		timeFlagSetupFont = ofGetElapsedTimeMillis();
 	}
 
 	else if (name == letterSpacing.getName()) {
-		bFlagSetupFont = true;
-		timeFlagSetupFont = ofGetElapsedTimeMillis();
+		bFlagSetupText = true;
+	} else if (name == heightLine.getName()) {
+		bFlagSetupText = true;
 	}
 
-	else if (name == heightLine.getName()) {
-		bFlagSetupFont = true;
-		timeFlagSetupFont = ofGetElapsedTimeMillis();
+	
+#ifdef SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
+	else if (name == lineWidth.getName()) {
+		if (!font.isLoaded()) return;
+
+		//https://forum.openframeworks.cc/t/calculate-letter-spacing-for-oftruetypefont-setletterspacing/42897/5?u=moebiussurfing
+		string s = textMessage.get();
+		auto desired_width = lineWidth;
+		auto missing_px = desired_width - font.stringWidth(s);
+		auto target_w = missing_px / float(s.size() - 1);
+		auto ratio = 1.0 + (target_w / font.getCharAdvance(' '));
+
+		letterSpacing = ratio;
+
+		bFlagSetupText = true;
 	}
+#endif
 
 	//-
 
-	if (name == textMessage.getName()) {
+	else if (name == textMessage.getName()) {
 		bFlagSetupText = true;
 	}
 
@@ -104,7 +116,14 @@ void ofxSurfing3dText::setupParams() {
 	textMessage.set("Text", "Eternteinment");
 	extrusion.set("Extrusion", 100, 0, 1000);
 	sizeFont.set("Size font", 150, 20, 1000);
+
+#ifdef SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
+	lineWidth.set("Line Width", 1000, 0, 10000);
+	letterSpacing.set("Letter Spacing", 0, 0, 20);
+#else
 	letterSpacing.set("Letter Spacing", 0, -1, 1);
+#endif
+
 	heightLine.set("Height Line", 0, -1, 1);
 	indexMode.set("Mode", 0, 0, 1);
 	bAnim.set("Anim", false);
@@ -132,6 +151,11 @@ void ofxSurfing3dText::setupParams() {
 	fontParams.add(textMessage);
 	fontParams.add(sizeFont);
 	fontParams.add(extrusion);
+
+#ifdef SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
+	fontParams.add(lineWidth);
+#endif
+
 	fontParams.add(letterSpacing);
 	fontParams.add(heightLine);
 	fontParams.add(bUppercase);
@@ -243,6 +267,10 @@ void ofxSurfing3dText::doResetFont() {
 	indexMode = 0;
 	bAnim = false;
 	bUppercase = false;
+
+#ifdef SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
+	lineWidth = 1000;
+#endif
 }
 
 //--------------------------------------------------------------
@@ -429,8 +457,8 @@ void ofxSurfing3dText::drawBounds() {
 
 	ofColor c;
 
-	c = ofColor((255, 150));
-	//c = ofColor((0, 150));
+	c = ofColor((255, 150));//white
+	//c = ofColor((0, 150));//black
 	//c = ofColor((184, 180, 176));
 
 	ofPushMatrix();
@@ -480,16 +508,6 @@ void ofxSurfing3dText::keyPressed(ofKeyEventArgs & eventArgs) {
 //--------------------------------------------------------------
 void ofxSurfing3dText::exit() {
 }
-
-////--------------------------------------------------------------
-//void ofxSurfing3dText::setBool(bool b) {
-//	ofLogNotice(__FUNCTION__) << ofToString(b ? "true" : "false");
-//}
-//
-////--------------------------------------------------------------
-//bool ofxSurfing3dText::getBool() {
-//	return true;
-//}
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::drawBounds(glm::vec3 min, glm::vec3 max, float size) {
@@ -584,6 +602,12 @@ void ofxSurfing3dText::stringToMeshNodes(string astring, float extrudeAmount) {
 		return;
 	}
 
+	//https://forum.openframeworks.cc/t/calculate-letter-spacing-for-oftruetypefont-setletterspacing/42897/5?u=moebiussurfing
+	font.setLetterSpacing(letterSpacing);
+	font.setSpaceSize(font.getSpaceSize() * letterSpacing);
+
+	
+#ifndef SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
 	// letterSpacing
 	const float spMin = 0.5f;
 	const float spMax = 4.f;
@@ -593,6 +617,7 @@ void ofxSurfing3dText::stringToMeshNodes(string astring, float extrudeAmount) {
 	else if (letterSpacing > 0)
 		sp = ofMap(letterSpacing, 0, 1, 1, spMax);
 	font.setLetterSpacing(sp);
+#endif
 
 	// heightLine
 	const float lhMax = 2.f;
@@ -819,24 +844,4 @@ void ofxSurfing3dText::keyPressed(int key) {
 			extrusion = 0;
 		}
 	}
-
-	//bool b = 0;
-	//if (!b) return;
-
-	//if (key == OF_KEY_DEL || key == 8) {
-	//	if (textMessage.get().length() > 0) {
-	//		textMessage.pop_back();
-	//		bRebuildMeshes = true;
-	//	}
-	//} else if (key == OF_KEY_RETURN || key == 13) {
-	//	textMessage += "\n";
-	//} else if (key < 300) {
-	//	unsigned char letter = (unsigned char)key;
-	//	textMessage += (letter);
-	//	bRebuildMeshes = true;
-	//}
-
-	//if (bRebuildMeshes) {
-	//	stringToMeshNodes(textMessage, extrusion);
-	//}
 }
