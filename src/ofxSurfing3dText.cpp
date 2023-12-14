@@ -29,6 +29,8 @@ void ofxSurfing3dText::Changed(ofAbstractParameter & e) {
 	if (e.isSerializable()) {
 		autoSaver.saveSoon();
 	}
+
+	buildHelp();
 }
 
 //--------------------------------------------------------------
@@ -366,15 +368,17 @@ void ofxSurfing3dText::buildHelp() {
 
 	sHelp = "HELP\n3D_TEXT";
 	sHelp += "\n\n";
-	sHelp += "TEXT:\n";
+	sHelp += "TEXT\n\n";
 	sHelp += textMessage.get();
 	sHelp += "\n\n";
 	sHelp += "g: Gui\n";
-	sHelp += "d: Debug\n";
-	sHelp += "u: Uppercase\n";
-	sHelp += "a: Animate\n";
-	sHelp += "\n\n";
-	sHelp += "Up/Down:\nExtrusion " + ofToString(extrusion.get(), 0);
+	sHelp += "d: Debug " + string(bDebug ? "ON " : "OFF") + "\n";
+	sHelp += "u: Uppercase " + string(bUppercase ? "ON " : "OFF") + "\n";
+	sHelp += "a: Animate " + string(bAnim ? "ON " : "OFF") + "\n";
+	sHelp += "\n";
+	sHelp += "E/e: Extrusion " + ofToString(extrusion.get(), 0) + "\n";
+	sHelp += "Left/Right: LetterSpacing " + ofToString(letterSpacing.get(), 2) + "\n";
+	sHelp += "Up/Down: HeightLine " + ofToString(heightLine.get(), 2) + "\n";
 }
 
 //--------------------------------------------------------------
@@ -868,13 +872,27 @@ void ofxSurfing3dText::keyPressed(int key) {
 		bAnim = !bAnim;
 	}
 
+	if (key == OF_KEY_RIGHT) {
+		letterSpacing += 0.01;
+		if (letterSpacing > letterSpacing.getMax()) letterSpacing = letterSpacing.getMax();
+	} else if (key == OF_KEY_LEFT) {
+		letterSpacing -= 0.01;
+		if (letterSpacing < letterSpacing.getMin()) letterSpacing = letterSpacing.getMin();
+	}
+
 	if (key == OF_KEY_UP) {
+		heightLine += 0.01;
+		if (heightLine > heightLine.getMax()) heightLine = heightLine.getMax();
+	} else if (key == OF_KEY_DOWN) {
+		heightLine -= 0.01;
+		if (heightLine < heightLine.getMin()) heightLine = heightLine.getMin();
+	}
+
+	if (key == 'E') {
 		extrusion += 10;
 		if (extrusion > extrusion.getMax()) extrusion = extrusion.getMax();
-	} else if (key == OF_KEY_DOWN) {
+	} else if (key == 'e') {
 		extrusion -= 10;
-		if (extrusion < 0) {
-			extrusion = 0;
-		}
+		if (extrusion < extrusion.getMin()) extrusion = extrusion.getMin();
 	}
 }
