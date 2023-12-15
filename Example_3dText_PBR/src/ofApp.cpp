@@ -64,6 +64,9 @@ void ofApp::drawMyScene() {
 		//glEnable(GL_CULL_FACE);
 		//glFrontFace(GL_CW);
 		//glCullFace(GL_BACK);
+		
+		//glFrontFace(GL_CCW);
+		//// fix for "transparent" for model head25k.obj with normals problems..
 
 		t.drawMeshes();
 

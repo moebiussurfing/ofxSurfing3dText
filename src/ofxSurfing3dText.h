@@ -2,6 +2,8 @@
 
 	TODO
 
+	fix wrong faces depth / transparent / normals!
+
 	add transform params zoom, pos, rot
 		node ofParam class
 

@@ -117,8 +117,7 @@ void ofApp::updateLights() {
 	}
 	lightColor.setHue(colorHue);
 
-	for (int i = 0; i < (int)pointLights.size(); i++) 
-	{
+	for (int i = 0; i < (int)pointLights.size(); i++) {
 		auto & l = pointLights[i];
 		lightColor.setHue(ofWrap(colorHue + (float)i * 12.5, 0, 255.f));
 		l->setDiffuseColor(lightColor);
@@ -128,7 +127,7 @@ void ofApp::updateLights() {
 		float tz = 50 + t.extrusion;
 		l->setPosition(tx, ty, tz);
 	}
-		
+
 	material.setAmbientColor(t.color);
 	material.setDiffuseColor(t.color);
 }
@@ -143,6 +142,7 @@ void ofApp::buildHelp() {
 	bool b5 = pointLights[4]->getIsEnabled();
 
 	string s = "";
+	s += ofxSurfing::getProjectName() + "\n\n";
 	s += "KEYS\n\n";
 	s += "HELP\n";
 	s += "H " + string(bHelp ? "ON" : "OFF") + "\n\n";

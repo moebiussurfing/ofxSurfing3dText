@@ -340,6 +340,7 @@ void ofxSurfing3dText::updateAnim() {
 
 void ofxSurfing3dText::drawGui() {
 	if (!bGui) return;
+
 	ofDisableDepthTest();
 
 	gui.draw();
@@ -371,14 +372,20 @@ void ofxSurfing3dText::buildHelp() {
 	sHelp += "TEXT\n\n";
 	sHelp += textMessage.get();
 	sHelp += "\n\n";
+	if (!bKeys) {
+		sHelp += "KEYS DISABLED\n";
+		return;
+	}
 	sHelp += "g: Gui\n";
-	sHelp += "d: Debug " + string(bDebug ? "ON " : "OFF") + "\n";
+	sHelp += "h: Help\n";
+	sHelp += "d: Debug     " + string(bDebug ? "ON " : "OFF") + "\n";
 	sHelp += "u: Uppercase " + string(bUppercase ? "ON " : "OFF") + "\n";
-	sHelp += "a: Animate " + string(bAnim ? "ON " : "OFF") + "\n";
+	sHelp += "a: Animate   " + string(bAnim ? "ON " : "OFF") + "\n";
 	sHelp += "\n";
-	sHelp += "E/e: Extrusion " + ofToString(extrusion.get(), 0) + "\n";
-	sHelp += "Left/Right: LetterSpacing " + ofToString(letterSpacing.get(), 2) + "\n";
-	sHelp += "Up/Down: HeightLine " + ofToString(heightLine.get(), 2) + "\n";
+	sHelp += "BACKSPACE:   Reset\n";
+	sHelp += "e/E:         Extrusion     " + ofToString(extrusion.get(), 0) + "\n";
+	sHelp += "LEFT/RIGHT:  LetterSpacing " + ofToString(letterSpacing.get(), 2) + "\n";
+	sHelp += "UP/DOWN:     HeightLine    " + ofToString(heightLine.get(), 2) + "\n";
 }
 
 //--------------------------------------------------------------
@@ -744,6 +751,13 @@ void ofxSurfing3dText::stringToMeshNodes(string astring, float extrudeAmount) {
 			meshNode.node.setPosition(meshNode.mesh.getCentroid());
 		}
 
+#if 0
+		//TODO: fix some wring drawing
+		for (size_t i = 0; i < meshNode.mesh.getNumNormals(); i++) {
+			meshNode.mesh.getNormals()[i] *= -1.f;
+		}
+#endif
+
 		meshNodes.push_back(meshNode);
 	}
 
@@ -859,6 +873,10 @@ void ofxSurfing3dText::keyPressed(ofKeyEventArgs & eventArgs) {
 void ofxSurfing3dText::keyPressed(int key) {
 	if (!bKeys) return;
 
+	if (key == 'h') {
+		bHelp = !bHelp;
+	}
+
 	if (key == 'g') {
 		bGui = !bGui;
 	}
@@ -870,6 +888,10 @@ void ofxSurfing3dText::keyPressed(int key) {
 	}
 	if (key == 'a') {
 		bAnim = !bAnim;
+	}
+
+	if (key == OF_KEY_BACKSPACE) {
+		doResetFont();
 	}
 
 	if (key == OF_KEY_RIGHT) {
