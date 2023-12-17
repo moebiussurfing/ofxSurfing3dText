@@ -54,6 +54,8 @@ void ofApp::renderScene() {
 //--------------------------------------------------------------
 void ofApp::drawMyScene() {
 
+	ofEnableDepthTest();
+
 	pbr.drawFloor();
 
 	pbr.beginMaterial();
@@ -67,6 +69,8 @@ void ofApp::drawMyScene() {
 		
 		//glFrontFace(GL_CCW);
 		//// fix for "transparent" for model head25k.obj with normals problems..
+
+
 
 		t.drawMeshes();
 

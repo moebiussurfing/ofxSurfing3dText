@@ -2,16 +2,19 @@
 
 	TODO
 
-	fix wrong faces depth / transparent / normals!
+	add animated path fonts/particles examples 
+		from "\apps\PFAD\examples\week_5\organicTypographyWorked"
 
 	add transform params zoom, pos, rot
 		node ofParam class
+		get from models helper class
 
 	add sceneManager public methods to pbr
 		add material
 		begin/end material
 
-	fonts browser
+	fonts browser using file browser helper
+		try to speed up pre loading all fonts..
 
 */
 

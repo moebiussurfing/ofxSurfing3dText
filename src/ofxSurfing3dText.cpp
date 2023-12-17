@@ -620,12 +620,14 @@ void ofxSurfing3dText::stringToMeshNodes(string astring, float extrudeAmount) {
 		return;
 	}
 
+	//--
+
 	//https://forum.openframeworks.cc/t/calculate-letter-spacing-for-oftruetypefont-setletterspacing/42897/5?u=moebiussurfing
 	font.setLetterSpacing(letterSpacing);
 	font.setSpaceSize(font.getSpaceSize() * letterSpacing);
 
-#ifndef SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
 	// letterSpacing
+#ifndef SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
 	const float spMin = 0.2f;
 	const float spMax = 4.f;
 	float sp = 1.f;
