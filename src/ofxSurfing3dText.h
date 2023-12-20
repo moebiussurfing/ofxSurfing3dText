@@ -1,13 +1,9 @@
 /*
-
 	TODO
 
-	add animated path fonts/particles examples 
-		from "\apps\PFAD\examples\week_5\organicTypographyWorked"
+	fix/remove bg bright, just the color
 
-	add transform params zoom, pos, rot
-		node ofParam class
-		get from models helper class
+	add presets manger. make a ofxSurfinPresetsLite with ofGui instead of ofxGui
 
 	add sceneManager public methods to pbr
 		add material
@@ -15,19 +11,22 @@
 
 	fonts browser using file browser helper
 		try to speed up pre loading all fonts..
-
 */
+
+//--
 
 // NOTE: Path to mesh code copied from OF core
 // openFrameworks\examples\3d\pathsToMeshesExample
+
+// OPTIONAL:
+//#define SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
 
 #pragma once
 
 #include "ofMain.h"
 
+#include "SurfingTransformNode.h"
 #include "ofxSurfingHelpersLite.h"
-
-//#define SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
 
 class MeshNode {
 public:
@@ -100,13 +99,18 @@ private:
 
 public:
 	void exit();
+	
+	void draw();//draws meshes but also bounds but could be with the material applied.
 
-	void draw();
-	void drawMeshes();
-	void drawBounds();
+	void drawMeshes();//draws meshes without bound
+	void drawBounds();//draws bound to allow be drawn out of any material.
+	
+private:
+	void drawMeshesMode0();
+	void drawMeshesMode1();
 
+public:
 	void drawGui();
-	//void drawGui(ofxPanel * guiPtr = nullptr);
 
 private:
 	void refreshGui();
@@ -138,7 +142,7 @@ public:
 
 public:
 	ofParameterGroup parameters;
-
+	
 	ofParameterGroup fontParams;
 	ofParameter<string> textMessage;
 	ofParameter<string> pathFont;
@@ -152,13 +156,17 @@ public:
 	ofParameter<int> indexMode;
 	ofParameter<void> vResetFont;
 	ofParameter<ofFloatColor> color;
-	ofEventListener listenerResetFont;
-	void doResetFont();
 
 #ifdef SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
 	ofParameter<int> lineWidth;
 #endif
 
+private:
+	ofEventListener listenerResetFont;
+public:
+	void doResetFont();
+
+public:
 	ofParameterGroup internalParams;
 	ofParameter<bool> bGui;
 	ofParameter<bool> bKeys;
@@ -166,11 +174,14 @@ public:
 	ofParameter<bool> bHelp;
 
 	ofParameterGroup drawParams;
+	ofParameterGroup debugParams;
 	ofParameter<bool> bDrawMeshes;
 	ofParameter<bool> bDrawBounds;
-	ofParameter<bool> bDrawBox;
+	ofParameter<bool> bDrawBBox;
 
 	ofxPanel gui;
+private:
+	SurfingOfxGuiPanelsManager guiManager;
 
 	string path = "ofxSurfing3dText_Settings.json";
 
@@ -182,4 +193,7 @@ private:
 
 	bool load();
 	void save();
+
+public:
+	TransformNode transform;
 };

@@ -84,6 +84,10 @@ void ofxSurfing3dText::ChangedFont(ofAbstractParameter & e) {
 	else if (name == extrusion.getName()) {
 		bFlagSetupText = true;
 	}
+
+	else if (name == bAnim.getName()) {
+		bFlagSetupText = true;
+	}
 }
 
 //--------------------------------------------------------------
@@ -138,7 +142,7 @@ void ofxSurfing3dText::setupParams() {
 	bDebug.set("Debug", true);
 	bDrawMeshes.set("Draw Meshes", true);
 	bDrawBounds.set("Draw Bounds", false);
-	bDrawBox.set("Draw Box", false);
+	bDrawBBox.set("Draw BBox", false);
 	vResetFont.set("Reset Font");
 
 	//-
@@ -147,8 +151,11 @@ void ofxSurfing3dText::setupParams() {
 
 	drawParams.setName("DRAW");
 	drawParams.add(bDrawMeshes);
-	drawParams.add(bDrawBox);
-	drawParams.add(bDrawBounds);
+	debugParams.setName("DEBUG");
+	debugParams.add(bDebug);
+	debugParams.add(bDrawBBox);
+	debugParams.add(bDrawBounds);
+	drawParams.add(debugParams);
 	parameters.add(drawParams);
 
 	fontParams.setName("Font");
@@ -171,16 +178,23 @@ void ofxSurfing3dText::setupParams() {
 	fontParams.add(vResetFont);
 	parameters.add(fontParams);
 
+	//--
+
+	transform.setPowRatio(0.01);
+	parameters.add(transform.parameters);
+
+	//--
+
 	internalParams.setName("Internal");
-	//internalParams.add(bGui);
+	internalParams.add(guiManager.bAutoLayout);
 	internalParams.add(bHelp);
 	internalParams.add(bKeys);
-	internalParams.add(bDebug);
+	//internalParams.add(bGui);
 	parameters.add(internalParams);
 
 	nameFont.setSerializable(false);
 
-	//-
+	//--
 
 	ofAddListener(parameters.parameterChangedE(), this, &ofxSurfing3dText::Changed);
 	ofAddListener(fontParams.parameterChangedE(), this, &ofxSurfing3dText::ChangedFont);
@@ -204,11 +218,13 @@ void ofxSurfing3dText::setupGui() {
 	ofLogNotice("ofxSurfingPBR") << "setupGui()";
 
 	gui.setup(parameters);
+	guiManager.setup(&gui);
 
 	ofxSurfing::setGuiPositionToLayout(gui, ofxSurfing::SURFING_LAYOUT_TOP_RIGHT);
 
 	gui.getGroup(internalParams.getName()).minimize();
 	gui.getGroup(drawParams.getName()).minimize();
+	gui.getGroup(drawParams.getName()).getGroup(debugParams.getName()).minimize();
 }
 
 //--------------------------------------------------------------
@@ -273,7 +289,7 @@ void ofxSurfing3dText::doResetFont() {
 	indexMode = 0;
 	bAnim = false;
 	bUppercase = false;
-	bDrawBox = true;
+	bDrawBBox = true;
 	bDrawBounds = false;
 
 #ifdef SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
@@ -325,7 +341,8 @@ void ofxSurfing3dText::updateAnim() {
 	for (int i = 0; i < meshNodes.size(); i++) {
 		float sine = sinf((float)i + elapsedTime);
 		float spin = ofMap(sine, 0.4, 0.6, 0, 360, true);
-		// we moved the vertices to be relative to the center at 0,0,0 so now we can move each one individually
+		// we moved the vertices to be relative to the center
+		// at 0,0,0 so now we can move each one individually
 		meshNodes[i].node.setOrientation(glm::angleAxis(ofDegToRad(spin), axis));
 	}
 }
@@ -338,6 +355,7 @@ void ofxSurfing3dText::updateAnim() {
 //}
 //}
 
+//--------------------------------------------------------------
 void ofxSurfing3dText::drawGui() {
 	if (!bGui) return;
 
@@ -350,6 +368,8 @@ void ofxSurfing3dText::drawGui() {
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::refreshGui() {
+	if (!guiManager.bAutoLayout) return;
+
 	ofLogNotice("ofxSurfing3dText") << "refreshGui()";
 
 	// top-left
@@ -383,7 +403,7 @@ void ofxSurfing3dText::buildHelp() {
 	sHelp += "a: Animate   " + string(bAnim ? "ON " : "OFF") + "\n";
 	sHelp += "\n";
 	sHelp += "BACKSPACE:   Reset\n";
-	sHelp += "e/E:         Extrusion     " + ofToString(extrusion.get(), 0) + "\n";
+	sHelp += "E/e:         Extrusion     " + ofToString(extrusion.get(), 0) + "\n";
 	sHelp += "LEFT/RIGHT:  LetterSpacing " + ofToString(letterSpacing.get(), 2) + "\n";
 	sHelp += "UP/DOWN:     HeightLine    " + ofToString(heightLine.get(), 2) + "\n";
 }
@@ -397,6 +417,7 @@ void ofxSurfing3dText::drawHelp() {
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::draw() {
+	if (!transform.isEnabled()) return;
 
 	drawMeshes();
 	drawBounds();
@@ -405,115 +426,136 @@ void ofxSurfing3dText::draw() {
 //--------------------------------------------------------------
 void ofxSurfing3dText::drawMeshes() {
 	if (!bDrawMeshes) return;
+
 	ofPushMatrix();
-
-	if (indexMode == 0) {
-		for (auto & meshNode : meshNodes) {
-			meshNode.node.transformGL();
-			meshNode.mesh.draw();
-			meshNode.node.restoreTransformGL();
-		}
-	}
-
-	else if (indexMode == 1) {
-		ofPushStyle();
-
-		float elapsedTime = ofGetElapsedTimef();
-
-		ofColor c = (255, 255);
-		float ow = 50;
-
-		for (auto & meshNode : meshNodes) {
-			ofPushMatrix();
-			ofTranslate(meshNode.node.getPosition());
-
-			//ofTranslate(0, 0, -1000 - extrusion * 2);
-			ofTranslate(0, 0, -(extrusion * 3) / 2.f);
-
-			//ofSetColor(184, 180, 176);
-			ofSetColor(c.r, c.g, c.b, 176);
-			for (auto & pline : meshNode.polylines) {
-				pline.draw();
-			}
-
-			float offset;
-			if (bAnim)
-				offset = 1.f - ofClamp(sinf(elapsedTime), 0, 1);
-			else
-				offset = .25f;
-
-			//ofSetColor(55, 206, 49);
-			ofSetColor(c.r, c.g, c.b, 59);
-			ofTranslate(0, 0, 2 * ow * offset);
-			for (auto & mesh : meshNode.srcMeshes) {
-				mesh.draw();
-			}
-
-			//ofSetColor(124, 120, 116);
-			ofSetColor(c.r, c.g, c.b, 116);
-			ofTranslate(0, 0, ow * offset + extrusion);
-			for (auto & mesh : meshNode.sideMeshes) {
-				mesh.draw();
-			}
-
-			//ofSetColor(55, 206, 49);
-			ofSetColor(c.r, c.g, c.b, 49);
-			ofTranslate(0, 0, ow * offset);
-			for (auto & mesh : meshNode.srcMeshes) {
-				mesh.draw();
-			}
-
-			ofPopMatrix();
+	transform.update();
+	{
+		if (indexMode == 0) {
+			drawMeshesMode0();
 		}
 
-		ofPopStyle();
+		else if (indexMode == 1) {
+			drawMeshesMode1();
+		}
+	}
+	ofPopMatrix();
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::drawMeshesMode0() {
+	ofPushMatrix();
+	for (auto & meshNode : meshNodes) {
+		meshNode.node.transformGL();
+		meshNode.mesh.draw();
+		meshNode.node.restoreTransformGL();
+	}
+	ofPopMatrix();
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::drawMeshesMode1() {
+	ofPushMatrix();
+	ofPushStyle();
+
+	float elapsedTime = ofGetElapsedTimef();
+
+	ofColor c = (255, 255);
+	float ow = 50;
+
+	for (auto & meshNode : meshNodes) {
+		ofPushMatrix();
+		ofTranslate(meshNode.node.getPosition());
+
+		//ofTranslate(0, 0, -1000 - extrusion * 2);
+		ofTranslate(0, 0, -(extrusion * 3) / 2.f);
+
+		//ofSetColor(184, 180, 176);
+		ofSetColor(c.r, c.g, c.b, 176);
+		for (auto & pline : meshNode.polylines) {
+			pline.draw();
+		}
+
+		float offset;
+		if (bAnim)
+			offset = 1.f - ofClamp(sinf(elapsedTime), 0, 1);
+		else
+			offset = .25f;
+
+		//ofSetColor(55, 206, 49);
+		ofSetColor(c.r, c.g, c.b, 59);
+		ofTranslate(0, 0, 2 * ow * offset);
+		for (auto & mesh : meshNode.srcMeshes) {
+			mesh.draw();
+		}
+
+		//ofSetColor(124, 120, 116);
+		ofSetColor(c.r, c.g, c.b, 116);
+		ofTranslate(0, 0, ow * offset + extrusion);
+		for (auto & mesh : meshNode.sideMeshes) {
+			mesh.draw();
+		}
+
+		//ofSetColor(55, 206, 49);
+		ofSetColor(c.r, c.g, c.b, 49);
+		ofTranslate(0, 0, ow * offset);
+		for (auto & mesh : meshNode.srcMeshes) {
+			mesh.draw();
+		}
+
+		ofPopMatrix();
 	}
 
+	ofPopStyle();
 	ofPopMatrix();
 }
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::drawBounds() {
 	if (!bDebug) return;
-	if (!bDrawBounds && !bDrawBox) return;
+	if (!bDrawBBox && !bDrawBounds) return;
 
-	ofColor c;
-
-	int a = 150;
-	//int a = ofMap(glm::sin(ofGetElapsedTimef()), -1, 1, 0, 200);
-
-	c = ofColor(255, a); //white
-	//c = ofColor(0, a);//black
-
-	ofPushStyle();
+	ofPushMatrix();
+	transform.update();
 	{
-		if (indexMode == 0) {
+		ofColor c;
 
-			if (bDrawBox) {
-				ofPushMatrix();
-				{
-					ofTranslate(-meshCentroid);
+		int a = 150;
+		//int a = ofMap(glm::sin(ofGetElapsedTimef()), -1, 1, 0, 200);//blink
 
-					ofSetColor(c);
+		c = ofColor(255, a); //white
+		//c = ofColor(0, a); //black
 
-					drawBounds(meshMin, meshMax, 100);
+		ofPushStyle();
+		{
+			if (indexMode == 0) {
+
+				if (bDrawBBox) {
+					ofPushMatrix();
+					{
+						ofTranslate(-meshCentroid);
+
+						ofSetColor(c);
+
+						drawBounds(meshMin, meshMax, 100);
+					}
+					ofPopMatrix();
 				}
-				ofPopMatrix();
-			}
 
-			if (bDrawBounds) {
-				for (auto & meshNode : meshNodes) {
-					meshNode.node.transformGL();
+				if (bDrawBounds) {
+					for (auto & meshNode : meshNodes) {
+						meshNode.node.transformGL();
 
-					ofSetColor(c);
+						ofSetColor(c);
 
-					drawBounds(meshNode.min, meshNode.max, 30);
-					meshNode.node.restoreTransformGL();
+						drawBounds(meshNode.min, meshNode.max, 30);
+						meshNode.node.restoreTransformGL();
+					}
 				}
 			}
 		}
+		ofPopStyle();
 	}
-	ofPopStyle();
+	ofPopMatrix();
 }
 
 //--------------------------------------------------------------
@@ -752,13 +794,6 @@ void ofxSurfing3dText::stringToMeshNodes(string astring, float extrudeAmount) {
 			meshNode.mesh = compedMesh;
 			meshNode.node.setPosition(meshNode.mesh.getCentroid());
 		}
-
-#if 0
-		//TODO: fix some wring drawing
-		for (size_t i = 0; i < meshNode.mesh.getNumNormals(); i++) {
-			meshNode.mesh.getNormals()[i] *= -1.f;
-		}
-#endif
 
 		meshNodes.push_back(meshNode);
 	}
