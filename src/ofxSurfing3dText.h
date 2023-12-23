@@ -1,11 +1,10 @@
 /*
 	TODO
 
-	fix/remove bg bright, just the color
-
 	add presets manger. make a ofxSurfinPresetsLite with ofGui instead of ofxGui
 
-	add sceneManager public methods to pbr
+	add sceneManager 
+		with public methods to pbr
 		add material
 		begin/end material
 

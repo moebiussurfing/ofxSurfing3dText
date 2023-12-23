@@ -223,8 +223,15 @@ void ofxSurfing3dText::setupGui() {
 	ofxSurfing::setGuiPositionToLayout(gui, ofxSurfing::SURFING_LAYOUT_TOP_RIGHT);
 
 	gui.getGroup(internalParams.getName()).minimize();
+	
 	gui.getGroup(drawParams.getName()).minimize();
-	gui.getGroup(drawParams.getName()).getGroup(debugParams.getName()).minimize();
+	
+	gui.getGroup(drawParams.getName()).getGroup(debugParams.getName())
+		.minimize();
+
+	gui.getGroup(fontParams.getName()).minimize();
+
+	gui.getGroup(transform.parameters.getName()).minimize();
 }
 
 //--------------------------------------------------------------
@@ -281,11 +288,11 @@ void ofxSurfing3dText::setupFont(string path) {
 void ofxSurfing3dText::doResetFont() {
 	ofLogNotice("ofxSurfingPBR") << "doResetFont()";
 
-	color = ofColor(128, 255);
-	extrusion = 100;
-	sizeFont = 150;
+	sizeFont = 100;
+	extrusion = sizeFont * 0.5;
 	letterSpacing = 0.f;
 	heightLine = 0.f;
+	color = ofColor(128, 255);
 	indexMode = 0;
 	bAnim = false;
 	bUppercase = false;
@@ -376,9 +383,7 @@ void ofxSurfing3dText::refreshGui() {
 	gui.setPosition(SURFING__PAD_TO_WINDOW_BORDERS, SURFING__PAD_TO_WINDOW_BORDERS);
 
 	// minimize sub panels
-
-	gui.getGroup(parameters.getName())
-		.getGroup(internalParams.getName())
+	gui.getGroup(parameters.getName()).getGroup(internalParams.getName())
 		.minimize();
 }
 
@@ -427,8 +432,7 @@ void ofxSurfing3dText::draw() {
 void ofxSurfing3dText::drawMeshes() {
 	if (!bDrawMeshes) return;
 
-	ofPushMatrix();
-	transform.update();
+	transform.push();
 	{
 		if (indexMode == 0) {
 			drawMeshesMode0();
@@ -438,7 +442,7 @@ void ofxSurfing3dText::drawMeshes() {
 			drawMeshesMode1();
 		}
 	}
-	ofPopMatrix();
+	transform.pop();
 }
 
 //--------------------------------------------------------------
@@ -514,8 +518,7 @@ void ofxSurfing3dText::drawBounds() {
 	if (!bDebug) return;
 	if (!bDrawBBox && !bDrawBounds) return;
 
-	ofPushMatrix();
-	transform.update();
+	transform.push();
 	{
 		ofColor c;
 
@@ -555,7 +558,7 @@ void ofxSurfing3dText::drawBounds() {
 		}
 		ofPopStyle();
 	}
-	ofPopMatrix();
+	transform.pop();
 }
 
 //--------------------------------------------------------------
