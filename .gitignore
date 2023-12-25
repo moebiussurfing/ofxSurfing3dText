@@ -586,3 +586,10 @@ Example_3dText_PBR/bin/data/cubemaps/hdrvfx_chanc_1_n1_v3_3k_Ref.hdr
 Example_3dText_PBR/bin/data/assets/fonts/NotoSansMono-Regular.ttf
 Example_3dText_PBR/bin/data/assets/fonts/frabk.ttf
 Example_3dText_PBR/bin/data/.gitkeep
+3_Example_Text_PBR_Presets/bin/data/assets/fonts/frabk.ttf
+3_Example_Text_PBR_Presets/bin/data/assets/fonts/NotoSansMono-Regular.ttf
+3_Example_Text_PBR_Presets/bin/data/cubemaps/hdrvfx_chanc_1_n1_v3_3k_Ref.hdr
+3_Example_Text_PBR_Presets/bin/data/cubemaps/kloppenheim_06_puresky_1k.exr
+3_Example_Text_PBR_Presets/bin/data/cubemaps/modern_buildings_2_1k.exr
+3_Example_Text_PBR_Presets/bin/data/images/001.jpg
+3_Example_Text_PBR_Presets/bin/data/ofxSurfingPBR_Camera.txt

@@ -116,7 +116,8 @@ private:
 
 	void drawHelp();
 	void buildHelp();
-
+	bool bFlagBuildHelp = false;
+	
 	string sHelp = "";
 
 	void update();

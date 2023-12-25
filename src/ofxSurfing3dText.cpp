@@ -30,7 +30,7 @@ void ofxSurfing3dText::Changed(ofAbstractParameter & e) {
 		autoSaver.saveSoon();
 	}
 
-	buildHelp();
+	bFlagBuildHelp = true;
 }
 
 //--------------------------------------------------------------
@@ -113,14 +113,14 @@ bool ofxSurfing3dText::load() {
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::setupParams() {
-	ofLogNotice("ofxSurfingPBR") << "setupParams()";
+	ofLogNotice("ofxSurfing3dText") << "setupParams()";
 
 	pathFont.set("P", "assets/fonts/NotoSansMono-Regular.ttf");
-	nameFont.set("N", "NotoSansMono-Regular.ttf"); //hardcode
+	nameFont.set("N", "NotoSansMono-Regular.ttf"); //hardcoded
 
 	textMessage.set("Text", "Eternteinment");
 	extrusion.set("Extrusion", 100, 0, 1000);
-	sizeFont.set("Size font", 150, 20, 1000);
+	sizeFont.set("Size font", 100, 10, 1000);
 
 #ifdef SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
 	lineWidth.set("Line Width", 1000, 0, 10000);
@@ -134,8 +134,6 @@ void ofxSurfing3dText::setupParams() {
 	bAnim.set("Animate", false);
 	bUppercase.set("Uppercase", false);
 	color.set("Color", ofColor(128, 255), ofColor(0, 0), ofColor(255, 255));
-
-	bGui.set("UI 3dText", true);
 	bKeys.set("Keys", true);
 	bDrawMeshes.set("Draw", true);
 	bHelp.set("Help", true);
@@ -147,7 +145,9 @@ void ofxSurfing3dText::setupParams() {
 
 	//-
 
-	parameters.setName("3dText");
+	parameters.setName("3D_TEXT");
+	string n = "UI " + parameters.getName();
+	bGui.set(n, true);
 
 	drawParams.setName("DRAW");
 	drawParams.add(bDrawMeshes);
@@ -187,10 +187,11 @@ void ofxSurfing3dText::setupParams() {
 
 	internalParams.setName("Internal");
 	internalParams.add(guiManager.bAutoLayout);
-	internalParams.add(bHelp);
-	internalParams.add(bKeys);
-	//internalParams.add(bGui);
+	internalParams.add(bGui);
 	parameters.add(internalParams);
+
+	parameters.add(bHelp);
+	parameters.add(bKeys);
 
 	nameFont.setSerializable(false);
 
@@ -215,35 +216,32 @@ void ofxSurfing3dText::setupParams() {
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::setupGui() {
-	ofLogNotice("ofxSurfingPBR") << "setupGui()";
+	ofLogNotice("ofxSurfing3dText") << "setupGui()";
 
 	gui.setup(parameters);
-	guiManager.setup(&gui);
-
 	ofxSurfing::setGuiPositionToLayout(gui, ofxSurfing::SURFING_LAYOUT_TOP_RIGHT);
 
+	guiManager.setup(&gui);
+	guiManager.add(&gui, bGui);
+	guiManager.startup();
+
 	gui.getGroup(internalParams.getName()).minimize();
-	
 	gui.getGroup(drawParams.getName()).minimize();
-	
-	gui.getGroup(drawParams.getName()).getGroup(debugParams.getName())
-		.minimize();
-
+	gui.getGroup(drawParams.getName()).getGroup(debugParams.getName()).minimize();
 	gui.getGroup(fontParams.getName()).minimize();
-
 	gui.getGroup(transform.parameters.getName()).minimize();
 }
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::startup() {
-	ofLogNotice("ofxSurfingPBR") << "startup()";
+	ofLogNotice("ofxSurfing3dText") << "startup()";
 
 	load();
 }
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::setupText(string text) {
-	ofLogNotice("ofxSurfingPBR") << "setupText() " << text;
+	ofLogNotice("ofxSurfing3dText") << "setupText() " << text;
 
 	if (text != "") {
 		textMessage.set(text);
@@ -262,7 +260,7 @@ void ofxSurfing3dText::setupText(string text) {
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::setupFont(string path) {
-	ofLogNotice("ofxSurfingPBR") << "setupFont() " << path;
+	ofLogNotice("ofxSurfing3dText") << "setupFont() " << path;
 
 	if (path != "") {
 		pathFont.set(path);
@@ -274,10 +272,10 @@ void ofxSurfing3dText::setupFont(string path) {
 	bool b = font.load(pathFont.get(), sizeFont, true, true, true);
 
 	if (b) {
-		ofLogNotice("ofxSurfingPBR") << "Font successfully downloaded: " << pathFont;
+		ofLogNotice("ofxSurfing3dText") << "Font successfully loaded: " << pathFont;
 		nameFont = ofFilePath::getBaseName(pathFont.get());
 	} else {
-		ofLogError("ofxSurfingPBR") << "Error loading font: " << pathFont;
+		ofLogError("ofxSurfing3dText") << "Error loading font: " << pathFont;
 		nameFont = "NONE";
 	}
 
@@ -286,9 +284,9 @@ void ofxSurfing3dText::setupFont(string path) {
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::doResetFont() {
-	ofLogNotice("ofxSurfingPBR") << "doResetFont()";
+	ofLogNotice("ofxSurfing3dText") << "doResetFont()";
 
-	sizeFont = 100;
+	sizeFont = 50;
 	extrusion = sizeFont * 0.5;
 	letterSpacing = 0.f;
 	heightLine = 0.f;
@@ -306,7 +304,7 @@ void ofxSurfing3dText::doResetFont() {
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::setup() {
-	ofLogNotice("ofxSurfingPBR") << "setup()";
+	ofLogNotice("ofxSurfing3dText") << "setup()";
 
 	setupParams();
 
@@ -326,14 +324,17 @@ void ofxSurfing3dText::update() {
 	uint64_t t = ofGetElapsedTimeMillis() - timeFlagSetupFont;
 	if (bFlagSetupFont && t >= timeFlagSetupFontGap) {
 		bFlagSetupFont = false;
-
 		setupFont();
 	}
 
 	if (bFlagSetupText) {
 		bFlagSetupText = false;
-
 		setupText();
+	}
+
+	if (bFlagBuildHelp) {
+		bFlagBuildHelp = false;
+		buildHelp();
 	}
 }
 
@@ -368,7 +369,8 @@ void ofxSurfing3dText::drawGui() {
 
 	ofDisableDepthTest();
 
-	gui.draw();
+	guiManager.draw();
+	//gui.draw();
 
 	drawHelp();
 }
@@ -383,14 +385,13 @@ void ofxSurfing3dText::refreshGui() {
 	gui.setPosition(SURFING__PAD_TO_WINDOW_BORDERS, SURFING__PAD_TO_WINDOW_BORDERS);
 
 	// minimize sub panels
-	gui.getGroup(parameters.getName()).getGroup(internalParams.getName())
-		.minimize();
+	gui.getGroup(parameters.getName()).getGroup(internalParams.getName()).minimize();
 }
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::buildHelp() {
 
-	ofLogNotice("ofxSurfingPBR") << "buildHelp()";
+	ofLogNotice("ofxSurfing3dText") << "buildHelp()";
 
 	sHelp = "HELP\n3D_TEXT";
 	sHelp += "\n\n";
@@ -417,7 +418,8 @@ void ofxSurfing3dText::buildHelp() {
 void ofxSurfing3dText::drawHelp() {
 	if (!bHelp) return;
 
-	ofxSurfing::ofDrawBitmapStringBox(sHelp, ofxSurfing::SURFING_LAYOUT_BOTTOM_CENTER);
+	//ofxSurfing::ofDrawBitmapStringBox(sHelp, ofxSurfing::SURFING_LAYOUT_BOTTOM_CENTER);
+	ofxSurfing::ofDrawBitmapStringBox(sHelp, &gui, ofxSurfing::SURFING_LAYOUT_TOP_RIGHT);
 }
 
 //--------------------------------------------------------------
