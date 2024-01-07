@@ -22,8 +22,8 @@ void ofApp::setup() {
 	gPreset.add(t.transform.vResetRotation);
 	gPreset.add(t.transform.vReset);
 
-	p.setPathPresets("TEXT\\Presets");
-	p.addGroup(gPreset);
+	p.setKitName("TEXT\\Presets");
+	p.setup(gPreset);
 
 	pbr.setup(camera);
 	callback_t f = std::bind(&ofApp::renderScene, this);

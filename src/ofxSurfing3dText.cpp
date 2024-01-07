@@ -16,7 +16,7 @@ ofxSurfing3dText::~ofxSurfing3dText() {
 	ofRemoveListener(ofEvents().keyPressed, this, &ofxSurfing3dText::keyPressed);
 
 	ofRemoveListener(parameters.parameterChangedE(), this, &ofxSurfing3dText::Changed);
-	ofRemoveListener(fontParams.parameterChangedE(), this, &ofxSurfing3dText::ChangedFont);
+	ofRemoveListener(paramsFont.parameterChangedE(), this, &ofxSurfing3dText::ChangedFont);
 }
 
 //--------------------------------------------------------------
@@ -24,7 +24,7 @@ void ofxSurfing3dText::Changed(ofAbstractParameter & e) {
 
 	std::string name = e.getName();
 
-	ofLogVerbose("ofxSurfing3dText") << "Changed " << name << ": " << e;
+	ofLogNotice("ofxSurfing3dText") << "Changed " << name << ": " << e;
 
 	if (e.isSerializable()) {
 		autoSaver.saveSoon();
@@ -43,14 +43,18 @@ void ofxSurfing3dText::ChangedFont(ofAbstractParameter & e) {
 	if (name == sizeFont.getName()) {
 		bFlagSetupFont = true;
 		timeFlagSetupFont = ofGetElapsedTimeMillis();
-	} else if (name == pathFont.getName()) {
+	}
+
+	else if (name == pathFont.getName()) {
 		bFlagSetupFont = true;
 		timeFlagSetupFont = ofGetElapsedTimeMillis();
 	}
 
 	else if (name == letterSpacing.getName()) {
 		bFlagSetupText = true;
-	} else if (name == heightLine.getName()) {
+	}
+
+	else if (name == heightLine.getName()) {
 		bFlagSetupText = true;
 	}
 
@@ -118,6 +122,10 @@ void ofxSurfing3dText::setupParams() {
 	pathFont.set("P", "assets/fonts/NotoSansMono-Regular.ttf");
 	nameFont.set("N", "NotoSansMono-Regular.ttf"); //hardcoded
 
+	paramsFile.setName("File");
+	paramsFile.add(nameFont);
+	paramsFile.add(pathFont);
+
 	textMessage.set("Text", "Eternteinment");
 	extrusion.set("Extrusion", 100, 0, 1000);
 	sizeFont.set("Size font", 100, 10, 1000);
@@ -145,38 +153,39 @@ void ofxSurfing3dText::setupParams() {
 
 	//-
 
+	paramsDraw.setName("DRAW");
+	paramsDraw.add(bDrawMeshes);
+
+	paramsDebug.setName("DEBUG");
+	paramsDebug.add(bDebug);
+	paramsDebug.add(bDrawBBox);
+	paramsDebug.add(bDrawBounds);
+	paramsDraw.add(paramsDebug);
+
 	parameters.setName("3D_TEXT");
 	string n = "UI " + parameters.getName();
 	bGui.set(n, true);
+	parameters.add(paramsDraw);
+	parameters.add(browserFonts.bGui);
 
-	drawParams.setName("DRAW");
-	drawParams.add(bDrawMeshes);
-	debugParams.setName("DEBUG");
-	debugParams.add(bDebug);
-	debugParams.add(bDrawBBox);
-	debugParams.add(bDrawBounds);
-	drawParams.add(debugParams);
-	parameters.add(drawParams);
-
-	fontParams.setName("Font");
-	fontParams.add(textMessage);
-	fontParams.add(color);
-	fontParams.add(sizeFont);
-	fontParams.add(extrusion);
+	paramsFont.setName("Font");
+	paramsFont.add(textMessage);
+	paramsFont.add(color);
+	paramsFont.add(sizeFont);
+	paramsFont.add(extrusion);
 
 #ifdef SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
-	fontParams.add(lineWidth);
+	paramsFont.add(lineWidth);
 #endif
 
-	fontParams.add(letterSpacing);
-	fontParams.add(heightLine);
-	fontParams.add(bUppercase);
-	fontParams.add(indexMode);
-	fontParams.add(bAnim);
-	fontParams.add(nameFont);
-	fontParams.add(pathFont);
-	fontParams.add(vResetFont);
-	parameters.add(fontParams);
+	paramsFont.add(letterSpacing);
+	paramsFont.add(heightLine);
+	paramsFont.add(bUppercase);
+	paramsFont.add(indexMode);
+	paramsFont.add(bAnim);
+	paramsFont.add(paramsFile);
+	paramsFont.add(vResetFont);
+	parameters.add(paramsFont);
 
 	//--
 
@@ -185,10 +194,10 @@ void ofxSurfing3dText::setupParams() {
 
 	//--
 
-	internalParams.setName("Internal");
-	internalParams.add(guiManager.bAutoLayout);
-	internalParams.add(bGui);
-	parameters.add(internalParams);
+	paramsInternal.setName("Internal");
+	paramsInternal.add(guiManager.bAutoLayout);
+	paramsInternal.add(bGui);
+	parameters.add(paramsInternal);
 
 	parameters.add(bHelp);
 	parameters.add(bKeys);
@@ -198,7 +207,7 @@ void ofxSurfing3dText::setupParams() {
 	//--
 
 	ofAddListener(parameters.parameterChangedE(), this, &ofxSurfing3dText::Changed);
-	ofAddListener(fontParams.parameterChangedE(), this, &ofxSurfing3dText::ChangedFont);
+	ofAddListener(paramsFont.parameterChangedE(), this, &ofxSurfing3dText::ChangedFont);
 
 	listenerResetFont = vResetFont.newListener([this](void) {
 		doResetFont();
@@ -206,6 +215,18 @@ void ofxSurfing3dText::setupParams() {
 
 	callback_t f = std::bind(&ofxSurfing3dText::save, this);
 	autoSaver.setFunctionSaver(f);
+
+	//--
+
+	listenerIndex = browserFonts.indexFile.newListener([this](int & i) {
+		ofLogNotice("ofxSurfing3dText") << "index: " << i;
+		if (browserFonts.bModeAutoload) {
+			string p = browserFonts.getPathFile(i);
+			pathFont.set(p);
+		}
+
+		//browserFonts.fontBook.indexFont.set(i);
+	});
 
 	//--
 
@@ -223,12 +244,13 @@ void ofxSurfing3dText::setupGui() {
 
 	guiManager.setup(&gui);
 	guiManager.add(&gui, bGui);
+	guiManager.add(&browserFonts.gui, browserFonts.bGui);
 	guiManager.startup();
 
-	gui.getGroup(internalParams.getName()).minimize();
-	gui.getGroup(drawParams.getName()).minimize();
-	gui.getGroup(drawParams.getName()).getGroup(debugParams.getName()).minimize();
-	gui.getGroup(fontParams.getName()).minimize();
+	gui.getGroup(paramsInternal.getName()).minimize();
+	gui.getGroup(paramsDraw.getName()).minimize();
+	gui.getGroup(paramsDraw.getName()).getGroup(paramsDebug.getName()).minimize();
+	gui.getGroup(paramsFont.getName()).minimize();
 	gui.getGroup(transform.parameters.getName()).minimize();
 }
 
@@ -308,7 +330,17 @@ void ofxSurfing3dText::setup() {
 
 	setupParams();
 
+	string p = "assets\\fonts";
+	setupFontsBowser(p);
+
 	setupFont();
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::setupFontsBowser(string path) {
+	ofLogNotice("ofxSurfing3dText") << "setupFontsBowser()";
+
+	browserFonts.setupFonts(path);
 }
 
 //--------------------------------------------------------------
@@ -336,6 +368,8 @@ void ofxSurfing3dText::update() {
 		bFlagBuildHelp = false;
 		buildHelp();
 	}
+
+	//browserFonts.updateAutoSwitch();
 }
 
 //--------------------------------------------------------------
@@ -370,7 +404,14 @@ void ofxSurfing3dText::drawGui() {
 	ofDisableDepthTest();
 
 	guiManager.draw();
-	//gui.draw();
+
+	if (browserFonts.bGui) {
+		//browserFonts.drawGui();
+		browserFonts.drawHelp(true);
+		auto r = guiManager.getShape();
+		glm::vec2 p = r.getTopRight() + glm::vec2(10, 0);
+		browserFonts.drawPreview(p.x, p.y);
+	}
 
 	drawHelp();
 }
@@ -385,7 +426,7 @@ void ofxSurfing3dText::refreshGui() {
 	gui.setPosition(SURFING__PAD_TO_WINDOW_BORDERS, SURFING__PAD_TO_WINDOW_BORDERS);
 
 	// minimize sub panels
-	gui.getGroup(parameters.getName()).getGroup(internalParams.getName()).minimize();
+	gui.getGroup(parameters.getName()).getGroup(paramsInternal.getName()).minimize();
 }
 
 //--------------------------------------------------------------
@@ -906,7 +947,7 @@ void ofxSurfing3dText::keyPressed(ofKeyEventArgs & eventArgs) {
 	bool mod_ALT = eventArgs.hasModifier(OF_KEY_ALT);
 	bool mod_SHIFT = eventArgs.hasModifier(OF_KEY_SHIFT);
 
-	ofLogNotice(__FUNCTION__) << " : " << key;
+	ofLogVerbose("ofxSurfing3dText") << "keyPressed";
 
 	keyPressed(key);
 }
@@ -914,6 +955,7 @@ void ofxSurfing3dText::keyPressed(ofKeyEventArgs & eventArgs) {
 //--------------------------------------------------------------
 void ofxSurfing3dText::keyPressed(int key) {
 	if (!bKeys) return;
+	ofLogNotice("ofxSurfing3dText") << "keyPressed: " << key;
 
 	if (key == 'h') {
 		bHelp = !bHelp;

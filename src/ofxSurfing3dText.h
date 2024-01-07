@@ -1,7 +1,7 @@
 /*
 	TODO
 
-	add presets manger. make a ofxSurfinPresetsLite with ofGui instead of ofxGui
+	add presets manger.
 
 	add sceneManager 
 		with public methods to pbr
@@ -26,6 +26,7 @@
 
 #include "SurfingTransformNode.h"
 #include "ofxSurfingHelpersLite.h"
+#include "SurfingFilesBrowserFonts.h"
 
 class MeshNode {
 public:
@@ -82,6 +83,7 @@ public:
 	~ofxSurfing3dText();
 
 	void setup();
+	void setupFontsBowser(string path);
 
 private:
 	bool bFlagSetupFont = false;
@@ -89,6 +91,8 @@ private:
 	uint64_t timeFlagSetupFont = 0;
 	const uint64_t timeFlagSetupFontGap = 50; // delay in ms to reduce re calls..
 
+	void setupFonts(string path = "");
+	
 	bool bFlagSetupText = false;
 	void setupText(string text = "");
 
@@ -98,12 +102,12 @@ private:
 
 public:
 	void exit();
-	
-	void draw();//draws meshes but also bounds but could be with the material applied.
 
-	void drawMeshes();//draws meshes without bound
-	void drawBounds();//draws bound to allow be drawn out of any material.
-	
+	void draw(); //draws meshes but also bounds but could be with the material applied.
+
+	void drawMeshes(); //draws meshes without bound
+	void drawBounds(); //draws bound to allow be drawn out of any material.
+
 private:
 	void drawMeshesMode0();
 	void drawMeshesMode1();
@@ -117,7 +121,7 @@ private:
 	void drawHelp();
 	void buildHelp();
 	bool bFlagBuildHelp = false;
-	
+
 	string sHelp = "";
 
 	void update();
@@ -143,7 +147,10 @@ public:
 public:
 	ofParameterGroup parameters;
 	
-	ofParameterGroup fontParams;
+	ofParameterGroup paramsFile;
+	ofEventListener listenerIndex; //get class internal index changed
+
+	ofParameterGroup paramsFont;
 	ofParameter<string> textMessage;
 	ofParameter<string> pathFont;
 	ofParameter<string> nameFont;
@@ -163,23 +170,25 @@ public:
 
 private:
 	ofEventListener listenerResetFont;
+
 public:
 	void doResetFont();
 
 public:
-	ofParameterGroup internalParams;
+	ofParameterGroup paramsInternal;
 	ofParameter<bool> bGui;
 	ofParameter<bool> bKeys;
 	ofParameter<bool> bDebug;
 	ofParameter<bool> bHelp;
 
-	ofParameterGroup drawParams;
-	ofParameterGroup debugParams;
+	ofParameterGroup paramsDraw;
+	ofParameterGroup paramsDebug;
 	ofParameter<bool> bDrawMeshes;
 	ofParameter<bool> bDrawBounds;
 	ofParameter<bool> bDrawBBox;
 
 	ofxPanel gui;
+
 private:
 	SurfingOfxGuiPanelsManager guiManager;
 
@@ -196,4 +205,6 @@ private:
 
 public:
 	TransformNode transform;
+
+	SurfingFilesBrowserFonts browserFonts;
 };

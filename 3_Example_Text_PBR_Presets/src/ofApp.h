@@ -1,5 +1,4 @@
 #pragma once
-
 #include "ofMain.h"
 
 #include "ofxSurfing3dText.h"
@@ -25,7 +24,7 @@ public:
 	ofxSurfing3dText t;
 
 	ofParameterGroup gPreset;
-	ofxSurfingPresetsLiteOfxGui p;
+	SurfingPresetsLiteOfxGui p;
 
 	ofxPanel gui;
 	ofParameterGroup gGui;

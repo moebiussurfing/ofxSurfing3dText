@@ -14,6 +14,9 @@ void ofApp::setup() {
 	camera.orbitDeg(0, -30, 1100);
 
 	t.setup();
+
+	//std::pair<std::string, std::size_t> font;
+	//f.load(font);	
 }
 
 //--------------------------------------------------------------
@@ -51,6 +54,8 @@ void ofApp::draw() {
 	//--
 
 	drawGui();
+
+	//f.draw
 }
 
 //--------------------------------------------------------------
