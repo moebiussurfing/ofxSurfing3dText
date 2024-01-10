@@ -1,6 +1,6 @@
 /*
 	Original code taken from 
-	https://gitlab.artificiel.org/ofxaddons/ofxFontBook/-/tree/master?ref_type=heads
+	https://gitlab.artificiel.org/ofxaddons/ofxFontsBook/-/tree/master?ref_type=heads
 	and modified by @moebiusSurfing.
 	currently only used to draw a preview of all the font files.
 	the class allows to directly draw fonts 
@@ -13,7 +13,7 @@
 #include "ofMain.h"
 
 /*
-   ofxFontBook est un static-friendly conteneur de ofTrueTypeFont qui
+   ofxFontsBook est un static-friendly conteneur de ofTrueTypeFont qui
    cherche récursivement et charge paresseusement les fontes à la demande
  */
 
@@ -29,20 +29,36 @@ public:
 	}
 };
 
+//--
+
 // fallback font (should be provided as ADDON_DATA) -- FIXME
 static std::string fontbook_fallback_ttf_ = "assets/fonts/mplus-1m-medium.ttf";
 
-class ofxFontBook {
+class ofxFontsBook {
 
 public:
-	ofxFontBook() = default;
+#if 0
+	ofxFontsBook() = default;
+#else
+	ofxFontsBook() {
+		//	parameters.setName("FONT BOOK");
+		//	parameters.add(bDraw);
+		//	parameters.add(indexFont);
+		//	parameters.add(sizeFont);
 
-	//ofxFontBook() {
-	//	parameters.setName("FONT BOOK");
-	//	parameters.add(bDraw);
-	//	parameters.add(indexFont);
-	//	parameters.add(sizeFont);
-	//};
+		#if 0
+		listenerSizeFont = sizeFont.newListener([this](float & v) {
+			ofLogNotice("ofxFontsBook") << "sizeFont: " << v;
+
+			float wmax = 0;
+			float hmax = 0;
+			fonts_.clear();
+
+			autoloadFontsFromDir();
+		});
+		#endif
+	}
+#endif
 
 	bool load(std::pair<std::string, std::size_t> font) {
 
@@ -52,7 +68,7 @@ public:
 				return 1;
 			}
 		}
-		ofLogWarning("ofxFontBook") << "not found: " << font.first << "; using fallback " << fontbook_fallback_ttf_ << "; loading size " << font.second;
+		ofLogWarning("ofxFontsBook") << "not found: " << font.first << "; using fallback " << fontbook_fallback_ttf_ << "; loading size " << font.second;
 		fonts_[font]->load(fontbook_fallback_ttf_, int(font.second));
 
 		return 0;
@@ -67,7 +83,7 @@ public:
 
 	void listLoadedFonts() {
 		for (const auto & font : fonts_) {
-			ofLogNotice("ofxFontBook") << "Loaded font: " << font.first.first << ", size: " << font.first.second;
+			ofLogNotice("ofxFontsBook") << "Loaded font: " << font.first.first << ", size: " << font.first.second;
 		}
 	}
 
@@ -78,17 +94,25 @@ public:
 	//	indexAlignMode = ofClamp(indexAlignMode, 0, ALIGN_RIGHT);
 	//}
 
-	void autoloadFontsFromDir(const std::string & dir, std::size_t size = 12) {
-		ofDirectory fontDir(dir);
+	void autoloadFontsFromDir(const std::string & path_ = "") {
+		if (path_ != "") {
+			path = path_;
+		}
+
+		ofDirectory fontDir(path);
 
 		fontDir.allowExt("ttf");
 		fontDir.allowExt("otf");
 
 		fontDir.listDir();
 
-		if (fontDir.size() == 0) ofLogError("ofxFontBook") << "Path " << dir << " not found!";
+		if (fontDir.size() == 0) ofLogError("ofxFontsBook") << "Path " << path_ << " not found!";
 
-		//sizeFont = size;
+		#if 0
+		size_t size = sizeFont;
+		#else
+		size_t size = 12;
+		#endif
 
 		for (const auto & file : fontDir.getFiles()) {
 			std::string fontName = file.getBaseName();
@@ -106,11 +130,11 @@ public:
 
 		int y_ = y;
 
-		y_ += 17;//offset
+		y_ += 17; //offset
 
 		// bg
-		static float wmax = 0;
-		static float hmax = 0;
+		//static float wmax = 0;
+		//static float hmax = 0;
 		int pad = 5;
 		ofRectangle rbb { (float)x - pad, (float)y_ - sizeFont - pad, wmax + 2 * pad, hmax + 2 * pad };
 		ofPushStyle();
@@ -121,38 +145,38 @@ public:
 		// text
 		ofSetColor(255, 255);
 
-//#define SURFING__SHOW__FONT_SELECTED 0
-//#if (SURFING__SHOW__FONT_SELECTED)
-//		// selected font
-//		string s = "";
-//		s += getFontNameByIndex() + "\n\n";
-//		//s += "Index: " + ofToString(indexFont) + "\n";
-//		//s += "Size: " + ofToString(sizeFont) + "\n";
-//		//s += "\n";
-//		if (indexFont >= 0 && indexFont < fonts_.size()) {
-//			auto it = fonts_.begin();
-//			std::advance(it, indexFont);
-//
-//			it->second->drawString(s, x, y_);
-//
-//			auto bb = it->second->getStringBoundingBox(s, 0, 0);
-//			int h = bb.getHeight();
-//			y_ += h;
-//
-//			y_ += lineSpacing;
-//
-//			if (bb.getWidth() > wmax) wmax = bb.getWidth();
-//		}
-//#endif
+		//#define SURFING__SHOW__FONT_SELECTED 0
+		//#if (SURFING__SHOW__FONT_SELECTED)
+		//		// selected font
+		//		string s = "";
+		//		s += getFontNameByIndex() + "\n\n";
+		//		//s += "Index: " + ofToString(indexFont) + "\n";
+		//		//s += "Size: " + ofToString(sizeFont) + "\n";
+		//		//s += "\n";
+		//		if (indexFont >= 0 && indexFont < fonts_.size()) {
+		//			auto it = fonts_.begin();
+		//			std::advance(it, indexFont);
+		//
+		//			it->second->drawString(s, x, y_);
+		//
+		//			auto bb = it->second->getStringBoundingBox(s, 0, 0);
+		//			int h = bb.getHeight();
+		//			y_ += h;
+		//
+		//			y_ += lineSpacing;
+		//
+		//			if (bb.getWidth() > wmax) wmax = bb.getWidth();
+		//		}
+		//#endif
 
 		// all fonts
 		size_t i = 0;
 		for (const auto & font : fonts_) {
 			std::string fontName = font.first.first;
 			string s = fontName;
-//#if (SURFING__SHOW__FONT_SELECTED)
-//			if (i == indexFont) s += " <";
-//#endif
+			//#if (SURFING__SHOW__FONT_SELECTED)
+			if (i == indexFont) s += " <";
+			//#endif
 			font.second->drawString(s, x, y_);
 
 			auto bb = font.second->getStringBoundingBox(s, 0, 0);
@@ -168,7 +192,7 @@ public:
 		ofPopStyle();
 	}
 
-	void drawStringWithName(const std::string & text, int x, int y, const std::string & fontName = "", std::size_t size=12) {
+	void drawStringWithName(const std::string & text, int x, int y, const std::string & fontName = "", std::size_t size = 12) {
 		//if (size == -1) size = sizeFont;
 		std::string useFontName = fontName.empty() ? fonts_.begin()->first.first : fontName;
 		if (!fonts_.count({ useFontName, size })) {
@@ -177,11 +201,11 @@ public:
 		fonts_[{ useFontName, size }]->drawString(text, x, y);
 	}
 
-	void drawStringWithIndex(const std::string & text, int x, int y, int index = -1, std::size_t size=12) {
+	void drawStringWithIndex(const std::string & text, int x, int y, int index = -1, std::size_t size = 12) {
 		//if (index == -1) index = indexFont;
 		//if (size == -1) size = sizeFont;
 		if (index < 0 || index >= fonts_.size()) {
-			ofLogError("ofxFontBook") << "Invalid font index: " << index;
+			ofLogError("ofxFontsBook") << "Invalid font index: " << index;
 			return;
 		}
 		auto it = fonts_.begin();
@@ -193,7 +217,7 @@ public:
 	std::string getFontNameByIndex(int index = -1) {
 		//if (index == -1) index = indexFont;
 		if (index < 0 || index >= fonts_.size()) {
-			ofLogError("ofxFontBook") << "Invalid font index: " << index;
+			ofLogError("ofxFontsBook") << "Invalid font index: " << index;
 			return "";
 		}
 		auto it = fonts_.begin();
@@ -228,6 +252,7 @@ private:
 		ttf_dir.listDir();
 		ttf_dir.allowExt("ttf");
 		ttf_dir.allowExt("otf");
+
 		for (const auto & ttf_file : ttf_dir.getFiles()) {
 			if (ttf_file.getBaseName() == font.first) {
 				fonts_[font]->load(ttf_file, int(font.second));
@@ -235,6 +260,7 @@ private:
 			}
 		}
 
+#if 1
 		// recursively scan cwd until found
 		ofDirectory subdirs(cwd);
 		subdirs.listDir();
@@ -247,6 +273,8 @@ private:
 				}
 			}
 		}
+#endif
+
 		return 0;
 	}
 
@@ -259,13 +287,23 @@ private:
 	//	ALIGN_RIGHT,
 	//};
 
+private:
+	float wmax = 0;
+	float hmax = 0;
+
 public:
+	ofParameter<bool> bDraw { "Draw Previews", true };
+	ofParameter<int> indexFont;
 	//ofParameter<int> indexFont { "index", -1, -1, -1 };
-	//ofParameter<float> sizeFont { "Size", 12.f, 4, 200 };
-	ofParameter<bool> bDraw { "Draw", true };
 	//ofParameterGroup parameters;
 
+#if 0
+	ofEventListener listenerSizeFont; //get class internal index changed
+	ofParameter<float> sizeFont { "Size", 12.f, 4, 30 };
+#else
 	float sizeFont = 12;
+#endif
+	string path = "";
 };
 
 #endif // OFXFONTBOOK_HPP

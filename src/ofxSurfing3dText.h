@@ -152,6 +152,8 @@ public:
 
 	ofParameterGroup paramsFont;
 	ofParameter<string> textMessage;
+	ofEventListener listenerTextMessage;
+
 	ofParameter<string> pathFont;
 	ofParameter<string> nameFont;
 	ofParameter<int> extrusion;

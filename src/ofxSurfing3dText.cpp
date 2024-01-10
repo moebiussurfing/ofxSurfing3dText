@@ -77,9 +77,9 @@ void ofxSurfing3dText::ChangedFont(ofAbstractParameter & e) {
 
 	//-
 
-	else if (name == textMessage.getName()) {
-		bFlagSetupText = true;
-	}
+	//else if (name == textMessage.getName()) {
+	//	bFlagSetupText = true;
+	//}
 
 	else if (name == bUppercase.getName()) {
 		bFlagSetupText = true;
@@ -127,6 +127,7 @@ void ofxSurfing3dText::setupParams() {
 	paramsFile.add(pathFont);
 
 	textMessage.set("Text", "Eternteinment");
+
 	extrusion.set("Extrusion", 100, 0, 1000);
 	sizeFont.set("Size font", 100, 10, 1000);
 
@@ -151,7 +152,7 @@ void ofxSurfing3dText::setupParams() {
 	bDrawBBox.set("Draw BBox", false);
 	vResetFont.set("Reset Font");
 
-	//-
+	//--
 
 	paramsDraw.setName("DRAW");
 	paramsDraw.add(bDrawMeshes);
@@ -166,10 +167,16 @@ void ofxSurfing3dText::setupParams() {
 	string n = "UI " + parameters.getName();
 	bGui.set(n, true);
 	parameters.add(paramsDraw);
-	parameters.add(browserFonts.bGui);
+	//parameters.add(browserFonts.bGui);
+
+	parameters.add(textMessage);
+	listenerTextMessage = textMessage.newListener([this](string & s) {
+		ofLogNotice("ofxSurfing3dText") << "text: " << s;
+		bFlagSetupText = true;
+	});
 
 	paramsFont.setName("Font");
-	paramsFont.add(textMessage);
+	//paramsFont.add(textMessage);
 	paramsFont.add(color);
 	paramsFont.add(sizeFont);
 	paramsFont.add(extrusion);
@@ -195,7 +202,7 @@ void ofxSurfing3dText::setupParams() {
 	//--
 
 	paramsInternal.setName("Internal");
-	paramsInternal.add(guiManager.bAutoLayout);
+	//paramsInternal.add(guiManager.bAutoLayout);
 	paramsInternal.add(bGui);
 	parameters.add(paramsInternal);
 
@@ -225,7 +232,7 @@ void ofxSurfing3dText::setupParams() {
 			pathFont.set(p);
 		}
 
-		//browserFonts.fontBook.indexFont.set(i);
+		//browserFonts.fontsBook.indexFont.set(i);
 	});
 
 	//--
@@ -408,8 +415,8 @@ void ofxSurfing3dText::drawGui() {
 	if (browserFonts.bGui) {
 		//browserFonts.drawGui();
 		browserFonts.drawHelp(true);
-		auto r = guiManager.getShape();
-		glm::vec2 p = r.getTopRight() + glm::vec2(10, 0);
+		auto r = guiManager.getShapePanels();
+		glm::vec2 p = r.getTopRight() + glm::vec2(SURFING__OFXGUI__PAD_BETWEEN_PANELS, 0);
 		browserFonts.drawPreview(p.x, p.y);
 	}
 

@@ -3,7 +3,6 @@
 #include "ofMain.h"
 
 #include "ofxSurfing3dText.h"
-#include "ofxFontBook.hpp"
 
 class ofApp : public ofBaseApp {
 	public:
@@ -31,7 +30,4 @@ class ofApp : public ofBaseApp {
 		void buildHelp();
 		string sHelp = "";
 		bool bHelp = true;
-
-
-		ofxFontBook f;
 };

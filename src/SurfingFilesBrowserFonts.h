@@ -13,7 +13,7 @@
 #include "ofMain.h"
 
 #include "SurfingFilesBrowser.h"
-#include "ofxFontBook.hpp"
+#include "ofxFontsBook.hpp"
 
 //--
 
@@ -40,10 +40,14 @@ private:
 		//parameters.add(paramsUser);
 
 		parameters.add(bDraw);
+		//parameters.add(fontsBook.sizeFont);
 		parameters.add(bModeAutoload);
 
 		parameters.add(bKeys);
 		parameters.add(bHelp);
+
+		//indexFile.makeReferenceTo(fontsBook.indexFont);
+		fontsBook.indexFont.makeReferenceTo(indexFile);
 	}
 
 	void setupGui() override {
@@ -87,7 +91,7 @@ public:
 
 	//--
 
-	ofxFontBook fontBook;
+	ofxFontsBook fontsBook;
 	//ofEventListener listenerIndex; //get class internal index changed
 
 	ofParameter<string> pathFonts;
@@ -113,23 +117,23 @@ public:
 
 		paramsExtra.add(pathFonts);
 
-		fontBook.bDraw.makeReferenceTo(bDraw);
+		fontsBook.bDraw.makeReferenceTo(bDraw);
 
 		//TODO: link
-		//indexFile.makeReferenceTo(fontBook.indexFont);
-		//fontBook.indexFont.makeReferenceTo(indexFile);
+		//indexFile.makeReferenceTo(fontsBook.indexFont);
+		//fontsBook.indexFont.makeReferenceTo(indexFile);
 
-		fontBook.autoloadFontsFromDir(pathFonts.get());
+		fontsBook.autoloadFontsFromDir(pathFonts.get());
 
 		//listenerIndex= indexFile.newListener([this](int & i) {
 		//	ofLogNotice("ofxSurfing3dText") << "index: " << i;
-		//	fontBook.indexFont.set(i);
+		//	fontsBook.indexFont.set(i);
 		//});
 
-	setup(path);
+		setup(path);
 	}
 
 	void drawPreview(int x, int y) {
-		fontBook.drawPreviews(x, y);
+		fontsBook.drawPreviews(x, y);
 	}
 };
