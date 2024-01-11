@@ -196,7 +196,7 @@ void ofxSurfing3dText::setupParams() {
 
 	//--
 
-	transform.setPowRatio(0.01);
+	//transform.setPowRatio(0.01);
 	parameters.add(transform.parameters);
 
 	//--
@@ -482,7 +482,7 @@ void ofxSurfing3dText::draw() {
 void ofxSurfing3dText::drawMeshes() {
 	if (!bDrawMeshes) return;
 
-	transform.push();
+	transform.transformGL();
 	{
 		if (indexMode == 0) {
 			drawMeshesMode0();
@@ -492,7 +492,7 @@ void ofxSurfing3dText::drawMeshes() {
 			drawMeshesMode1();
 		}
 	}
-	transform.pop();
+	transform.restoreTransformGL();
 }
 
 //--------------------------------------------------------------
@@ -568,7 +568,7 @@ void ofxSurfing3dText::drawBounds() {
 	if (!bDebug) return;
 	if (!bDrawBBox && !bDrawBounds) return;
 
-	transform.push();
+	transform.transformGL();
 	{
 		ofColor c;
 
@@ -608,7 +608,7 @@ void ofxSurfing3dText::drawBounds() {
 		}
 		ofPopStyle();
 	}
-	transform.pop();
+	transform.restoreTransformGL();
 }
 
 //--------------------------------------------------------------
