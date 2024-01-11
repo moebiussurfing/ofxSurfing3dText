@@ -17,6 +17,7 @@ ofxSurfing3dText::~ofxSurfing3dText() {
 
 	ofRemoveListener(parameters.parameterChangedE(), this, &ofxSurfing3dText::Changed);
 	ofRemoveListener(paramsFont.parameterChangedE(), this, &ofxSurfing3dText::ChangedFont);
+	ofRemoveListener(transform.parameters.parameterChangedE(), this, &ofxSurfing3dText::ChangedTransform);
 }
 
 //--------------------------------------------------------------
@@ -31,6 +32,14 @@ void ofxSurfing3dText::Changed(ofAbstractParameter & e) {
 	}
 
 	bFlagBuildHelp = true;
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::ChangedTransform(ofAbstractParameter & e) {
+
+	if (e.isSerializable()) {
+		autoSaver.saveSoon();
+	}
 }
 
 //--------------------------------------------------------------
@@ -92,6 +101,10 @@ void ofxSurfing3dText::ChangedFont(ofAbstractParameter & e) {
 	else if (name == bAnim.getName()) {
 		bFlagSetupText = true;
 	}
+
+	//else if (name == bKeys.getName()) {
+	//	buildHelp();
+	//}
 }
 
 //--------------------------------------------------------------
@@ -100,6 +113,8 @@ void ofxSurfing3dText::save() {
 
 	// save scene
 	ofxSurfing::saveSettings(parameters, path);
+
+	ofxSurfing::saveSettings(transform.parameters);
 }
 
 //--------------------------------------------------------------
@@ -109,6 +124,8 @@ bool ofxSurfing3dText::load() {
 	autoSaver.pause();
 
 	bool b = ofxSurfing::loadSettings(parameters, path);
+
+	bool b1 = ofxSurfing::loadSettings(transform.parameters);
 
 	autoSaver.start();
 
@@ -139,8 +156,11 @@ void ofxSurfing3dText::setupParams() {
 #endif
 
 	heightLine.set("Height Line", 0, -1, 1);
-	indexMode.set("Mode", 0, 0, 1);
+
+	indexModeDeform.set("Mode", 0, 0, 2);
+	powerDeform.set("Power", 0, 0, 1);
 	bAnim.set("Animate", false);
+
 	bUppercase.set("Uppercase", false);
 	color.set("Color", ofColor(128, 255), ofColor(0, 0), ofColor(255, 255));
 	bKeys.set("Keys", true);
@@ -188,16 +208,22 @@ void ofxSurfing3dText::setupParams() {
 	paramsFont.add(letterSpacing);
 	paramsFont.add(heightLine);
 	paramsFont.add(bUppercase);
-	paramsFont.add(indexMode);
-	paramsFont.add(bAnim);
+
 	paramsFont.add(paramsFile);
 	paramsFont.add(vResetFont);
 	parameters.add(paramsFont);
 
+	paramsMeshDeform.setName("Mesh Deform");
+	paramsMeshDeform.add(indexModeDeform);
+	paramsMeshDeform.add(powerDeform);
+	paramsMeshDeform.add(bAnim);
+	parameters.add(paramsMeshDeform);
+
 	//--
 
 	//transform.setPowRatio(0.01);
-	parameters.add(transform.parameters);
+	guiTransform.setup(transform.parameters);
+	//parameters.add(transform.parameters);
 
 	//--
 
@@ -207,6 +233,7 @@ void ofxSurfing3dText::setupParams() {
 	parameters.add(paramsInternal);
 
 	parameters.add(bHelp);
+	parameters.add(bDebug);
 	parameters.add(bKeys);
 
 	nameFont.setSerializable(false);
@@ -215,6 +242,7 @@ void ofxSurfing3dText::setupParams() {
 
 	ofAddListener(parameters.parameterChangedE(), this, &ofxSurfing3dText::Changed);
 	ofAddListener(paramsFont.parameterChangedE(), this, &ofxSurfing3dText::ChangedFont);
+	ofAddListener(transform.parameters.parameterChangedE(), this, &ofxSurfing3dText::ChangedTransform);
 
 	listenerResetFont = vResetFont.newListener([this](void) {
 		doResetFont();
@@ -251,6 +279,7 @@ void ofxSurfing3dText::setupGui() {
 
 	guiManager.setup(&gui);
 	guiManager.add(&gui, bGui);
+	guiManager.add(&guiTransform);
 	guiManager.add(&browserFonts.gui, browserFonts.bGui);
 	guiManager.startup();
 
@@ -258,7 +287,9 @@ void ofxSurfing3dText::setupGui() {
 	gui.getGroup(paramsDraw.getName()).minimize();
 	gui.getGroup(paramsDraw.getName()).getGroup(paramsDebug.getName()).minimize();
 	gui.getGroup(paramsFont.getName()).minimize();
-	gui.getGroup(transform.parameters.getName()).minimize();
+	gui.getGroup(paramsMeshDeform.getName()).minimize();
+
+	guiTransform.getGroup(transform.paramsResets.getName()).minimize();
 }
 
 //--------------------------------------------------------------
@@ -320,8 +351,11 @@ void ofxSurfing3dText::doResetFont() {
 	letterSpacing = 0.f;
 	heightLine = 0.f;
 	color = ofColor(128, 255);
-	indexMode = 0;
+
+	indexModeDeform = 0;
 	bAnim = false;
+	powerDeform = 0.1;
+
 	bUppercase = false;
 	bDrawBBox = true;
 	bDrawBounds = false;
@@ -358,7 +392,7 @@ void ofxSurfing3dText::update(ofEventArgs & args) {
 //--------------------------------------------------------------
 void ofxSurfing3dText::update() {
 
-	if (bAnim) updateAnim();
+	if (bAnim && (indexModeDeform == 0 || indexModeDeform == 2)) updateAnim();
 
 	uint64_t t = ofGetElapsedTimeMillis() - timeFlagSetupFont;
 	if (bFlagSetupFont && t >= timeFlagSetupFontGap) {
@@ -382,9 +416,17 @@ void ofxSurfing3dText::update() {
 //--------------------------------------------------------------
 void ofxSurfing3dText::updateAnim() {
 
-	float elapsedTime = ofGetElapsedTimef();
+	float t = ofGetElapsedTimef();
+#if 0
+	float elapsedTime = t;
+#else
+	float a = ofMap(powerDeform, 0, 1, 0.4, 1, true);
+	float elapsedTime = a * t;
+#endif
+
 	glm::vec3 axis(0, -1, 0);
-	if (ofGetFrameNum() % 200 < 100) {
+	int df = 60 * 3;
+	if (ofGetFrameNum() % df < df / 2) {
 		axis = glm::vec3(1, 0, 0);
 	}
 	for (int i = 0; i < meshNodes.size(); i++) {
@@ -467,7 +509,8 @@ void ofxSurfing3dText::drawHelp() {
 	if (!bHelp) return;
 
 	//ofxSurfing::ofDrawBitmapStringBox(sHelp, ofxSurfing::SURFING_LAYOUT_BOTTOM_CENTER);
-	ofxSurfing::ofDrawBitmapStringBox(sHelp, &gui, ofxSurfing::SURFING_LAYOUT_TOP_RIGHT);
+	//ofxSurfing::ofDrawBitmapStringBox(sHelp, &gui, ofxSurfing::SURFING_LAYOUT_TOP_RIGHT);
+	ofxSurfing::ofDrawBitmapStringBox(sHelp, &gui, ofxSurfing::SURFING_LAYOUT_TOP_LEFT);
 }
 
 //--------------------------------------------------------------
@@ -482,14 +525,21 @@ void ofxSurfing3dText::draw() {
 void ofxSurfing3dText::drawMeshes() {
 	if (!bDrawMeshes) return;
 
+	if (transform.isDebug()) transform.draw();
+	if (!transform.isEnabled()) return;
+
 	transform.transformGL();
 	{
-		if (indexMode == 0) {
+		if (indexModeDeform == 0) {
 			drawMeshesMode0();
 		}
 
-		else if (indexMode == 1) {
+		else if (indexModeDeform == 1) {
 			drawMeshesMode1();
+		}
+
+		else if (indexModeDeform == 2) {
+			drawMeshesMode2();
 		}
 	}
 	transform.restoreTransformGL();
@@ -535,21 +585,20 @@ void ofxSurfing3dText::drawMeshesMode1() {
 		else
 			offset = .25f;
 
-		//ofSetColor(55, 206, 49);
+		offset *= powerDeform;
+
 		ofSetColor(c.r, c.g, c.b, 59);
 		ofTranslate(0, 0, 2 * ow * offset);
 		for (auto & mesh : meshNode.srcMeshes) {
 			mesh.draw();
 		}
 
-		//ofSetColor(124, 120, 116);
 		ofSetColor(c.r, c.g, c.b, 116);
 		ofTranslate(0, 0, ow * offset + extrusion);
 		for (auto & mesh : meshNode.sideMeshes) {
 			mesh.draw();
 		}
 
-		//ofSetColor(55, 206, 49);
 		ofSetColor(c.r, c.g, c.b, 49);
 		ofTranslate(0, 0, ow * offset);
 		for (auto & mesh : meshNode.srcMeshes) {
@@ -557,6 +606,35 @@ void ofxSurfing3dText::drawMeshesMode1() {
 		}
 
 		ofPopMatrix();
+	}
+
+	ofPopStyle();
+	ofPopMatrix();
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::drawMeshesMode2() {
+	ofPushMatrix();
+	ofPushStyle();
+
+	//modify mesh with some noise
+	float liquidness = 5;
+	float amplitude = ofMap(powerDeform, 0, 1, 0, 5, true);
+	float speedDampen = 5;
+
+	for (auto & meshNode : meshNodes) {
+		ofVboMesh mesh = meshNode.mesh;
+		auto & verts = mesh.getVertices();
+
+		for (unsigned int i = 0; i < verts.size(); i++) {
+			verts[i].x += ofSignedNoise(verts[i].x / liquidness, verts[i].y / liquidness, verts[i].z / liquidness, ofGetElapsedTimef() / speedDampen) * amplitude;
+			verts[i].y += ofSignedNoise(verts[i].z / liquidness, verts[i].x / liquidness, verts[i].y / liquidness, ofGetElapsedTimef() / speedDampen) * amplitude;
+			verts[i].z += ofSignedNoise(verts[i].y / liquidness, verts[i].z / liquidness, verts[i].x / liquidness, ofGetElapsedTimef() / speedDampen) * amplitude;
+		}
+
+		meshNode.node.transformGL();
+		mesh.drawFaces();
+		meshNode.node.restoreTransformGL();
 	}
 
 	ofPopStyle();
@@ -580,7 +658,7 @@ void ofxSurfing3dText::drawBounds() {
 
 		ofPushStyle();
 		{
-			if (indexMode == 0) {
+			if (indexModeDeform == 0) {
 
 				if (bDrawBBox) {
 					ofPushMatrix();
@@ -588,7 +666,6 @@ void ofxSurfing3dText::drawBounds() {
 						ofTranslate(-meshCentroid);
 
 						ofSetColor(c);
-
 						drawBounds(meshMin, meshMax, 100);
 					}
 					ofPopMatrix();
@@ -599,8 +676,8 @@ void ofxSurfing3dText::drawBounds() {
 						meshNode.node.transformGL();
 
 						ofSetColor(c);
-
 						drawBounds(meshNode.min, meshNode.max, 30);
+
 						meshNode.node.restoreTransformGL();
 					}
 				}

@@ -111,6 +111,7 @@ public:
 private:
 	void drawMeshesMode0();
 	void drawMeshesMode1();
+	void drawMeshesMode2();
 
 public:
 	void drawGui();
@@ -140,6 +141,7 @@ private:
 
 	void Changed(ofAbstractParameter & e);
 	void ChangedFont(ofAbstractParameter & e);
+	void ChangedTransform(ofAbstractParameter & e);
 
 public:
 	glm::vec3 getBoundBoxShape() const;
@@ -160,9 +162,13 @@ public:
 	ofParameter<float> letterSpacing;
 	ofParameter<float> heightLine;
 	ofParameter<float> sizeFont;
-	ofParameter<bool> bAnim;
 	ofParameter<bool> bUppercase;
-	ofParameter<int> indexMode;
+
+	ofParameterGroup paramsMeshDeform;
+	ofParameter<int> indexModeDeform;
+	ofParameter<float> powerDeform;
+	ofParameter<bool> bAnim;
+
 	ofParameter<void> vResetFont;
 	ofParameter<ofFloatColor> color;
 
@@ -207,6 +213,7 @@ private:
 
 public:
 	TransformNode transform;
+	ofxPanel guiTransform;
 
 	SurfingFilesBrowserFonts browserFonts;
 };

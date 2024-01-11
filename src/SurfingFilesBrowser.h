@@ -20,6 +20,7 @@
 #include "ofMain.h"
 
 #include "ofxSurfingHelpersLite.h"
+
 #include <functional>
 using callback_t = std::function<void()>;
 
@@ -370,6 +371,10 @@ protected:
 
 		ofLogNotice("ofxSurfingPBR") << "SurfingFilesBrowser:Changed " << name << ": " << e;
 
+		if (name == bKeys.getName()) {
+			buildHelp();
+		}
+
 		//if (name == bModeAll.getName()) {
 		//	//workflow
 		//	if (bAutoSwitch) bAutoSwitch.set(false);
@@ -440,10 +445,15 @@ private:
 		ofLogNotice("ofxSurfingPBR") << "SurfingFilesBrowser:buildHelp()";
 
 		sHelp = "";
-		sHelp += sTitle + "\n";
+		sHelp += sTitle + "\n\n";
 		sHelp += this->getFilename() + "\n";
+		if (!bKeys) {
 		sHelp += "\n";
-		sHelp += "BROWSE FILES\n";
+			sHelp += "KEYS DISABLED\n";
+			return;
+		}
+		//sHelp += "\n";
+		//sHelp += "BROWSE FILES\n";
 		sHelp += "\n";
 		sHelp += "DOWN Next\n";
 		sHelp += "UP   Previous\n";

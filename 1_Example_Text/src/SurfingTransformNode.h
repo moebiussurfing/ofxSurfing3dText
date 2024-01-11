@@ -15,6 +15,8 @@
 	- allow mode for independent scale for xyz
 	- add simple example?
 	- add bbox for selected model
+	- add gui?
+	- add settings
 */
 
 //--
@@ -22,6 +24,35 @@
 #pragma once
 
 #include "ofMain.h"
+
+//TODO: add settings
+#include "ofxSurfingHelpersLite.h"
+/*
+	//setup()
+	callback_t f = std::bind(&ofxSurfing3dText::save, this);
+	autoSaver.setFunctionSaver(f);
+	guiTransform.getGroup(transform.parameters.getName()).getGroup(transform.paramsResets.getName()).minimize();
+
+void ofxSurfing3dText::save() {
+	ofLogNotice("ofxSurfing3dText") << "save -> " << path;
+	ofxSurfing::saveSettings(parameters);
+
+	//changed
+	if (e.isSerializable()) {
+		autoSaver.saveSoon();
+	}
+}
+
+bool ofxSurfing3dText::load() {
+	ofLogNotice("ofxSurfing3dText") << "load -> " << path;
+	autoSaver.pause();
+	bool b= ofxSurfing::loadSettings(transform.parameters);
+	autoSaver.start();
+	return b;
+}
+*/
+
+//----
 
 //OPTIONAL: comment the below line
 // if you are using this class standalone,
@@ -36,43 +67,9 @@
 #define SURFING__MAX_DEGREE 360
 //#define SURFING__MAX_DEGREE 180
 
-//--
+//----
 
 class TransformNode : public ofNode {
-private:
-	const float scaleNormalizedRatio = 10.f;
-	const int scaleNormalizedPowMax = 100;
-	const float scaleNormalizedUnit = scaleNormalizedRatio * scaleNormalizedPowMax;
-	const float unitSize = SURFING__PBR__SCENE_SIZE_UNIT * 1.f;
-
-public:
-	ofParameter<bool> bDraw { "Draw", true };
-	ofParameter<bool> bDebug { "Debug", false };
-
-public:
-	ofParameter<void> vReset { "Reset" };
-	ofParameter<void> vResetScale { "Reset Scale" };
-	ofParameter<void> vResetPosition { "Reset Position" };
-	ofParameter<void> vResetRotation { "Reset Rotation" };
-
-	ofParameterGroup parameters; //exposed to the gui
-	ofParameterGroup paramsScaleNormalized;
-	ofParameterGroup paramsOfNode;
-	ofParameterGroup paramsResets;
-
-private:
-	std::unique_ptr<ofEventListener> e_vResetScale;
-	std::unique_ptr<ofEventListener> e_vResetPosition;
-	std::unique_ptr<ofEventListener> e_vResetRotation;
-	std::unique_ptr<ofEventListener> e_vReset;
-
-	std::unique_ptr<ofEventListener> e_positionChanged;
-	std::unique_ptr<ofEventListener> e_scaleNormalized;
-	std::unique_ptr<ofEventListener> e_scaleNormalizedPow;
-	std::unique_ptr<ofEventListener> e_rotatioEulerChanged; //TODO
-
-	//--
-
 public:
 	TransformNode() {
 		setup();
@@ -101,9 +98,51 @@ public:
 
 	//--
 
+private:
+	bool bEnableSettings = true;
+
+	const float scaleNormalizedRatio = 10.f;
+	const int scaleNormalizedPowMax = 100;
+	const float scaleNormalizedUnit = scaleNormalizedRatio * scaleNormalizedPowMax;
+	const float unitSize = SURFING__PBR__SCENE_SIZE_UNIT * 1.f;
+
+public:
+	void setEnableSettings(bool b) {
+		bEnableSettings = b;
+	}
+
+	ofParameter<bool> bDraw { "Draw", true };
+	ofParameter<bool> bDebug { "Debug", false };
+
+public:
+	ofParameter<void> vReset { "Reset" };
+	ofParameter<void> vResetScale { "Reset Scale" };
+	ofParameter<void> vResetPosition { "Reset Position" };
+	ofParameter<void> vResetRotation { "Reset Rotation" };
+
+	ofParameterGroup parameters; //exposed to the gui
+	ofParameterGroup paramsScaleNormalized;
+	ofParameterGroup paramsOfNode;
+	ofParameterGroup paramsResets;
+
+private:
+	std::unique_ptr<ofEventListener> e_vResetScale;
+	std::unique_ptr<ofEventListener> e_vResetPosition;
+	std::unique_ptr<ofEventListener> e_vResetRotation;
+	std::unique_ptr<ofEventListener> e_vReset;
+
+	std::unique_ptr<ofEventListener> e_positionChanged;
+	std::unique_ptr<ofEventListener> e_scaleNormalized;
+	std::unique_ptr<ofEventListener> e_scaleNormalizedPow;
+	std::unique_ptr<ofEventListener> e_rotatioEulerChanged; //TODO
+
+	//--
+
 	void setup() {
 
 		// parameters
+
+		parameters.setName("TRANSFORM");
 
 		paramsOfNode.setName("ofNode");
 		paramsOfNode.add(scale);
@@ -114,7 +153,6 @@ public:
 		paramsScaleNormalized.add(scaleNormalizedPow);
 		paramsScaleNormalized.add(scaleNormalized);
 
-		parameters.setName("Transform");
 		parameters.add(bDraw);
 		parameters.add(bDebug);
 		parameters.add(paramsOfNode);
@@ -357,14 +395,14 @@ public:
 		glm::vec3(-unitSize), glm::vec3(unitSize) };
 
 	ofParameter<glm::vec3> scale { "Scale", glm::vec3(1),
-		glm::vec3(-scaleNormalizedUnit), glm::vec3(scaleNormalizedUnit) };
+		glm::vec3(1), glm::vec3(scaleNormalizedUnit) };
 
 	ofParameter<glm::vec3> rotationEuler { "Rotation Euler", glm::vec3(0),
 		glm::vec3(-(float)SURFING__MAX_DEGREE), glm::vec3((float)SURFING__MAX_DEGREE) };
 
 	// Normalized controls
 	ofParameter<float> scaleNormalized { "Scale Norm", 0, -1.f, 1.f };
-	ofParameter<int> scaleNormalizedPow { "Scale Pow", scaleNormalizedPowMax / 2, 0, scaleNormalizedPowMax };
+	ofParameter<int> scaleNormalizedPow { "Scale Pow", scaleNormalizedPowMax / 2, 1, scaleNormalizedPowMax };
 	ofParameter<glm::vec3> positionNormalized { "Position Normalized", glm::vec3(0), glm::vec3(-1), glm::vec3(1) };
 
 	//--

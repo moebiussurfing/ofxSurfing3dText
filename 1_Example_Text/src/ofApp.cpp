@@ -72,7 +72,7 @@ void ofApp::drawScene() {
 
 		if (bEnableLights) ofDisableLighting();
 
-		// debug
+		// debug/draw point lights
 		if (t.bDebug) {
 			ofPushStyle();
 			for (int i = 0; i < (int)pointLights.size(); i++) {
@@ -147,7 +147,7 @@ void ofApp::buildHelp() {
 	s += "H " + string(bHelp ? "ON" : "OFF") + "\n\n";
 	s += "LIGHTS\n\n";
 	s += "DEBUG\n";
-	s += "L " + string(bEnableLights ? "ON" : "OFF") + "\n\n";
+	s += "L ALL " + string(bEnableLights ? "ON" : "OFF") + "\n\n";
 	s += "ENABLE\n";
 	s += "1 " + string(b1 ? "ON" : "OFF") + "\n";
 	s += "2 " + string(b2 ? "ON" : "OFF") + "\n";
@@ -169,6 +169,11 @@ void ofApp::keyPressed(int key) {
 			else
 				l->disable();
 		}
+		return;
+	}
+
+	if (key == 'h' || key == 'H') {
+		bHelp = !bHelp;
 		return;
 	}
 
