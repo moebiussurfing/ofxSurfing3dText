@@ -109,9 +109,10 @@ public:
 	void drawBounds(); //draws bound to allow be drawn out of any material.
 
 private:
-	void drawMeshesMode0();
-	void drawMeshesMode1();
-	void drawMeshesMode2();
+	// different compositions with the letters!
+	void drawMeshesMode0();//raw
+	void drawMeshesMode1();//multilayer
+	void drawMeshesMode2();//deformed mesh
 
 public:
 	void drawGui();
@@ -212,8 +213,8 @@ private:
 	void save();
 
 public:
-	TransformNode transform;
-	ofxPanel guiTransform;
+	TransformNode transformNode;
+	//ofxPanel guiTransformNode;
 
 	SurfingFilesBrowserFonts browserFonts;
 };

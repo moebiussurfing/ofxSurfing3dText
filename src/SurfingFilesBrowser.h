@@ -448,15 +448,15 @@ private:
 		sHelp += sTitle + "\n\n";
 		sHelp += this->getFilename() + "\n";
 		if (!bKeys) {
-		sHelp += "\n";
+			sHelp += "\n";
 			sHelp += "KEYS DISABLED\n";
-			return;
+		} else {
+			//sHelp += "\n";
+			//sHelp += "BROWSE FILES\n";
+			sHelp += "\n";
+			sHelp += "DOWN Next\n";
+			sHelp += "UP   Previous\n";
 		}
-		//sHelp += "\n";
-		//sHelp += "BROWSE FILES\n";
-		sHelp += "\n";
-		sHelp += "DOWN Next\n";
-		sHelp += "UP   Previous\n";
 		sHelp += "\n";
 		sHelp += this->getFilenamesList();
 	}

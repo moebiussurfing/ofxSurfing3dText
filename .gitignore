@@ -603,3 +603,15 @@ Example_3dText_PBR/bin/data/.gitkeep
 1_Example_Text/bin/data/assets/fonts/Epilogue-Medium.ttf
 1_Example_Text/bin/data/assets/fonts/Epilogue-LightItalic.ttf
 1_Example_Text/bin/data/assets/fonts/Epilogue-Light.ttf
+3_Example_Text_PBR_Presets/bin/data/assets/fonts/mplus-1m-medium.ttf
+3_Example_Text_PBR_Presets/bin/data/assets/fonts/Epilogue-ThinItalic.ttf
+3_Example_Text_PBR_Presets/bin/data/assets/fonts/Epilogue-Thin.ttf
+3_Example_Text_PBR_Presets/bin/data/assets/fonts/Epilogue-SemiBoldItalic.ttf
+3_Example_Text_PBR_Presets/bin/data/assets/fonts/Epilogue-SemiBold.ttf
+3_Example_Text_PBR_Presets/bin/data/assets/fonts/Epilogue-Regular.ttf
+3_Example_Text_PBR_Presets/bin/data/assets/fonts/Epilogue-MediumItalic.ttf
+3_Example_Text_PBR_Presets/bin/data/assets/fonts/Epilogue-Medium.ttf
+3_Example_Text_PBR_Presets/bin/data/assets/fonts/Epilogue-LightItalic.ttf
+3_Example_Text_PBR_Presets/bin/data/assets/fonts/Epilogue-Light.ttf
+2_Example_Text_PBR/bin/data/ofxSurfingPBR_Camera.txt
+2_Example_Text_PBR/bin/data/.gitkeep

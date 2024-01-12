@@ -5,36 +5,43 @@ void ofApp::setup() {
 
 #if 1
 	ofxSurfing::setWindowTitleAsProjectName();
-	ofxSurfing::setWindowAtMonitor(-1);
+	ofxSurfing::setWindowAtMonitor(1);
 	ofxSurfing::setOfxGuiTheme(true);
 #endif
 
 	t.setup();
 
-	gPreset.setName("TEXT");
-	gPreset.add(t.extrusion);
-	gPreset.add(t.heightLine);
-	gPreset.add(t.letterSpacing);
-	gPreset.add(t.transform.scale);
-	gPreset.add(t.transform.position);
-	gPreset.add(t.transform.vResetPosition);
-	gPreset.add(t.transform.rotation);
-	gPreset.add(t.transform.vResetRotation);
-	gPreset.add(t.transform.vReset);
+	// select only what we want to store, 
+	// to simplify or adapt to our workflow.
+	paramsPreset.setName("TEXT");
 
-	p.setKitName("TEXT\\Presets");
-	p.setup(gPreset);
+	//letters
+	paramsPreset.add(t.extrusion);
+	paramsPreset.add(t.letterSpacing);
+	paramsPreset.add(t.heightLine);
+	paramsPreset.add(t.pathFont);
+
+	//transform
+	paramsPreset.add(t.transformNode.paramsPreset);
+
+	presets.setKitName("TEXT\\Presets");
+	presets.setup(paramsPreset);
 
 	pbr.setup(camera);
 	callback_t f = std::bind(&ofApp::renderScene, this);
 	pbr.setFunctionRenderScene(f);
 
-	gGui.setName("ofApp");
-	gGui.add(p.bGui);
-	gGui.add(t.bGui);
-	gGui.add(pbr.bGui);
-	gui.setup(gGui);
+	paramsApp.setName("ofApp");
+	paramsApp.add(presets.bGui);
+	paramsApp.add(t.bGui);
+	paramsApp.add(pbr.bGui);
+	gui.setup(paramsApp);
+
+	//refresh
 	ofxSurfing::setGuiPositionToLayout(gui, ofxSurfing::SURFING_LAYOUT_BOTTOM_LEFT);
+	//TODO
+	t.transformNode.refreshGui(presets.guiParams, "TEXT_PRESET");
+	//t.transformNode.refreshGui(presets.guiParams, presets.parameters);
 }
 
 //--------------------------------------------------------------
@@ -60,7 +67,7 @@ void ofApp::drawGui() {
 
 	pbr.drawGui();
 	t.drawGui();
-	p.drawGui();
+	presets.drawGui();
 
 	gui.draw();
 }

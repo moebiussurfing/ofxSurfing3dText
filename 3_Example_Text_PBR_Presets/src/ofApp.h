@@ -23,9 +23,9 @@ public:
 	
 	ofxSurfing3dText t;
 
-	ofParameterGroup gPreset;
-	SurfingPresetsLiteOfxGui p;
+	ofParameterGroup paramsPreset;
+	SurfingPresetsLiteOfxGui presets;
 
 	ofxPanel gui;
-	ofParameterGroup gGui;
+	ofParameterGroup paramsApp;
 };

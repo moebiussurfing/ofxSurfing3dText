@@ -1,4 +1,5 @@
 ofxGui
 ofxSurfing3dText
+ofxSurfingHelpersLite
 ofxSurfingPBR
 ofxSurfingPresetsLite
