@@ -21,9 +21,9 @@ public:
 	void renderScene();
 	void drawMyScene();
 
-	ofxSurfing3dText t;
+	ofxSurfing3dText text3d;
 
-	ofParameterGroup paramsPreset;
+	ofParameterGroup paramsPreset; 
 	SurfingPresetsLiteOfxGui presets;
 
 	ofxPanel guiApp;

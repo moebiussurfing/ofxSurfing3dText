@@ -6,36 +6,49 @@ void ofApp::setup() {
 #if 1
 	ofxSurfing::setWindowTitleAsProjectName();
 	ofxSurfing::setWindowAtMonitor(-1);
-	ofxSurfing::setOfxGuiTheme(0);
+	ofxSurfing::setOfxGuiTheme(1);
 #endif
 
-	t.setup();
+	//--
 
-	// select only what we want to store,
-	// to simplify or adapt to our workflow.
-	paramsPreset.setName("TEXT_PARAMS");
-	paramsPreset.add(t.paramsPreset);
+	// text
 
-	presets.setKitName("TEXT\\Presets");
-	presets.setup(paramsPreset);
+	text3d.setup();
+
+	//--
+
+	// Pbr
 
 	pbr.setup(camera);
 	callback_t f = std::bind(&ofApp::renderScene, this);
 	pbr.setFunctionRenderScene(f);
+	pbr.bDrawTestScene = false;
 
+	//--
+
+	// Presets
+
+	string name = "myTextScene";
+	paramsPreset.setName(name);
+	paramsPreset.add(text3d.paramsPreset);
+	//paramsPreset.add(pbr.paramsPreset);//TODO
+
+	//presets.setKitName("TEXT\\Presets"); // Optional: custom subpath!
+	presets.setup(paramsPreset);
+	text3d.refreshGuiUserParams(presets.guiParams);
+
+	//--
+
+	// App UI
 	paramsApp.setName("ofApp");
 	paramsApp.add(presets.bGui);
-	paramsApp.add(t.bGui);
+	paramsApp.add(text3d.bGui);
 	paramsApp.add(pbr.bGui);
+
 	guiApp.setup(paramsApp);
 
-	//refresh layout
+	// Refresh layout
 	ofxSurfing::setGuiPositionToLayout(guiApp, ofxSurfing::SURFING_LAYOUT_BOTTOM_LEFT);
-
-	//TODO
-	//t.refreshGui(presets.guiParams, "TEXT_NODE");
-	//t.refreshGui(presets.guiParams, presets.parameters);
-	//TODO: fix bc seems renamed on runtime..?
 }
 
 //--------------------------------------------------------------
@@ -60,7 +73,7 @@ void ofApp::drawGui() {
 	ofDisableDepthTest();
 
 	pbr.drawGui();
-	t.drawGui();
+	text3d.drawGui();
 	presets.drawGui();
 
 	guiApp.draw();
@@ -79,12 +92,12 @@ void ofApp::drawMyScene() {
 
 	pbr.beginMaterial();
 	{
+		text3d.drawMeshes();
 		pbr.drawTestScene();
-		t.drawMeshes();
 	}
 	pbr.endMaterial();
 
-	t.drawBounds();
+	text3d.drawBounds();
 }
 
 //--------------------------------------------------------------

@@ -36,12 +36,12 @@ private:
 	void setupParametersExtra() override {
 		ofLogNotice("ofxSurfingPBR") << "SurfingFilesBrowserFonts:setupParametersExtra()";
 
+		parameters.add(bModeAutoload);
 		parameters.add(paramsExtra);
 		//parameters.add(paramsUser);
 
 		parameters.add(bDraw);
 		//parameters.add(fontsBook.sizeFont);
-		parameters.add(bModeAutoload);
 
 		parameters.add(bKeys);
 		parameters.add(bHelp);
@@ -117,7 +117,7 @@ public:
 
 		paramsExtra.add(pathFonts);
 
-		fontsBook.bDraw.makeReferenceTo(bDraw);
+		fontsBook.bDrawPreviews.makeReferenceTo(bDraw);
 
 		//TODO: link
 		//indexFile.makeReferenceTo(fontsBook.indexFont);

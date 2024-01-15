@@ -42,7 +42,7 @@ public:
 #else
 	ofxFontsBook() {
 		//	parameters.setName("FONT BOOK");
-		//	parameters.add(bDraw);
+		//	parameters.add(bDrawPreviews);
 		//	parameters.add(indexFont);
 		//	parameters.add(sizeFont);
 
@@ -121,7 +121,7 @@ public:
 	}
 
 	void drawPreviews(int x, int y, int lineSpacing = -1) {
-		if (!bDraw) return;
+		if (!bDrawPreviews) return;
 
 		//if (indexFont == -1 && fonts_.size() > 0) indexFont = 0;
 
@@ -137,13 +137,18 @@ public:
 		//static float hmax = 0;
 		int pad = 5;
 		ofRectangle rbb { (float)x - pad, (float)y_ - sizeFont - pad, wmax + 2 * pad, hmax + 2 * pad };
+
 		ofPushStyle();
-		ofSetColor(0, 255);
+		int a1 = 255;
+		int a2 = 200;
+		ofColor c1 = ofColor(ofColor::white, a1);
+		ofColor c2 = ofColor(ofColor::black, a2);
+		ofSetColor(c2);
 		ofFill();
 		ofDrawRectangle(rbb);
 
 		// text
-		ofSetColor(255, 255);
+		ofSetColor(c1);
 
 		//#define SURFING__SHOW__FONT_SELECTED 0
 		//#if (SURFING__SHOW__FONT_SELECTED)
@@ -292,7 +297,7 @@ private:
 	float hmax = 0;
 
 public:
-	ofParameter<bool> bDraw { "Draw Previews", true };
+	ofParameter<bool> bDrawPreviews { "Draw Previews", true };
 	ofParameter<int> indexFont;
 	//ofParameter<int> indexFont { "index", -1, -1, -1 };
 	//ofParameterGroup parameters;

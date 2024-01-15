@@ -24,9 +24,9 @@
 
 #include "ofMain.h"
 
+#include "SurfingFilesBrowserFonts.h"
 #include "SurfingTransformNode.h"
 #include "ofxSurfingHelpersLite.h"
-#include "SurfingFilesBrowserFonts.h"
 
 class MeshNode {
 public:
@@ -92,11 +92,12 @@ private:
 	const uint64_t timeFlagSetupFontGap = 50; // delay in ms to reduce re calls..
 
 	void setupFonts(string path = "");
-	
+
 	bool bFlagSetupText = false;
 	void setupText(string text = "");
 
 	void setupParams();
+	void setupParamsPreset();
 	void setupGui();
 	void startup();
 
@@ -110,19 +111,18 @@ public:
 
 private:
 	// different compositions with the letters!
-	void drawMeshesMode0();//raw
-	void drawMeshesMode1();//multilayer
-	void drawMeshesMode2();//deformed mesh
+	void drawMeshesMode0(); //raw
+	void drawMeshesMode1(); //multilayer
+	void drawMeshesMode2(); //deformed mesh
 
 public:
 	void drawGui();
 
-	//TODO
 	void refreshGui();
-	//void refreshGui(ofxPanel & gui_);
-	//public method to be used on parent gui panels!
-	void refreshGui(ofxPanel & gui_, string name_);
-	void refreshGui(ofxPanel & gui_, ofParameterGroup & group_);
+	//public methods to be used on parent gui panels!
+	//for example user simplified UI or exposed params on a presets manager!
+	void refreshGuiUserParams(ofxPanel & gui_, ofxGuiGroup & group_);
+	void refreshGuiUserParams(ofxPanel & gui_);
 
 private:
 	void drawHelp();
@@ -153,9 +153,13 @@ public:
 	glm::vec3 getBoundBoxShape() const;
 
 public:
-	ofParameterGroup parameters;
-	ofParameterGroup paramsPreset;//some selected object to be used on presets manager or user/UI
-	
+	ofParameterGroup paramsPreset; 
+	// some selected params to be used on presets manager or user/UI
+	// to simplify or adapt to our workflow: select only what we want to store,
+	ofParameterGroup paramsPresetFont; 
+
+	ofParameterGroup parameters;//exposed to UI and settings
+
 	ofParameterGroup paramsFile;
 	ofEventListener listenerIndex; //get class internal index changed
 
@@ -188,6 +192,7 @@ private:
 
 public:
 	void doResetFont();
+	void doResetTransform();
 
 public:
 	ofParameterGroup paramsInternal;
@@ -220,7 +225,16 @@ private:
 
 public:
 	TransformNode transformNode;
-	//ofxPanel guiTransformNode;
 
-	SurfingFilesBrowserFonts browserFonts;
+	SurfingFilesBrowserFonts filesBrowserFonts;
+	ofParameter<int> & getIndexParam() { return filesBrowserFonts.indexFile; }
+
+	void setNamePresetParams(string name) { namePresetParams = name; };
+
+private:
+	string namePresetParams = "TEXT_PRESET";
+	public:
+		string getName() const {
+			return namePresetParams;
+	}
 };

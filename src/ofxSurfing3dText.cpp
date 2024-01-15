@@ -113,8 +113,6 @@ void ofxSurfing3dText::save() {
 
 	// save scene
 	ofxSurfing::saveSettings(parameters, path);
-
-	//ofxSurfing::saveSettings(transformNode.parameters);
 }
 
 //--------------------------------------------------------------
@@ -124,8 +122,6 @@ bool ofxSurfing3dText::load() {
 	autoSaver.pause();
 
 	bool b = ofxSurfing::loadSettings(parameters, path);
-
-	//bool b1 = ofxSurfing::loadSettings(transformNode.parameters);
 
 	autoSaver.start();
 
@@ -145,7 +141,7 @@ void ofxSurfing3dText::setupParams() {
 
 	textMessage.set("Text", "Eternteinment");
 
-	int u= SURFING__PBR__SCENE_SIZE_UNIT / 5;
+	int u = SURFING__PBR__SCENE_SIZE_UNIT / 5;
 	extrusion.set("Extrusion", 100, 0, u);
 	sizeFont.set("Size font", 100, 10, u);
 
@@ -188,7 +184,7 @@ void ofxSurfing3dText::setupParams() {
 	string n = "UI " + parameters.getName();
 	bGui.set(n, true);
 	parameters.add(paramsDraw);
-	//parameters.add(browserFonts.bGui);
+	//parameters.add(filesBrowserFonts.bGui);
 
 	parameters.add(textMessage);
 	listenerTextMessage = textMessage.newListener([this](string & s) {
@@ -222,17 +218,12 @@ void ofxSurfing3dText::setupParams() {
 
 	//--
 
-	transformNode.setName("TEXT_NODE");
+	transformNode.setName("TransformNode");
 	transformNode.setup();
-	//transformNode.setEnableGui(true);
-	//transform.setPowRatio(0.01);
-	//guiTransformNode.setup(transformNode.parameters);
-	//parameters.add(transform.parameters);
 
 	//--
 
 	paramsInternal.setName("Internal");
-	//paramsInternal.add(guiManager.bAutoLayout);
 	paramsInternal.add(bGui);
 	parameters.add(paramsInternal);
 
@@ -246,7 +237,6 @@ void ofxSurfing3dText::setupParams() {
 
 	ofAddListener(parameters.parameterChangedE(), this, &ofxSurfing3dText::Changed);
 	ofAddListener(paramsFont.parameterChangedE(), this, &ofxSurfing3dText::ChangedFont);
-	//ofAddListener(transformNode.parameters.parameterChangedE(), this, &ofxSurfing3dText::ChangedTransform);
 
 	listenerResetFont = vResetFont.newListener([this](void) {
 		doResetFont();
@@ -257,34 +247,46 @@ void ofxSurfing3dText::setupParams() {
 
 	//--
 
-	listenerIndex = browserFonts.indexFile.newListener([this](int & i) {
+	listenerIndex = filesBrowserFonts.indexFile.newListener([this](int & i) {
 		ofLogNotice("ofxSurfing3dText") << "index: " << i;
-		if (browserFonts.bModeAutoload) {
-			string p = browserFonts.getPathFile(i);
+		if (filesBrowserFonts.bModeAutoload) {
+			string p = filesBrowserFonts.getPathFile(i);
 			pathFont.set(p);
 		}
 
-		//browserFonts.fontsBook.indexFont.set(i);
+		//filesBrowserFonts.fontsBook.indexFont.set(i);
 	});
 
 	//--
 
-	paramsPreset.setName("TEXT_PRESET");
-	
-	//letters
-	paramsPreset.add(extrusion);
-	paramsPreset.add(letterSpacing);
-	paramsPreset.add(heightLine);
-	paramsPreset.add(pathFont);
-
-	//transform
-	paramsPreset.add(transformNode.paramsPreset);
+	setupParamsPreset();
 
 	//--
 
 	setupGui();
 
 	startup();
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::setupParamsPreset() {
+	ofLogNotice("ofxSurfing3dText") << "setupParamsPreset()";
+
+	paramsPreset.setName(namePresetParams);
+
+	//font/letters
+	paramsPresetFont.setName("Font");
+	paramsPresetFont.add(extrusion);
+	paramsPresetFont.add(letterSpacing);
+	paramsPresetFont.add(heightLine);
+
+	paramsPresetFont.add(nameFont);
+	paramsPresetFont.add(getIndexParam());
+
+	paramsPreset.add(paramsPresetFont);
+
+	//transform
+	paramsPreset.add(transformNode.paramsPreset);
 }
 
 //--------------------------------------------------------------
@@ -297,7 +299,7 @@ void ofxSurfing3dText::setupGui() {
 	guiManager.setup(&gui);
 	guiManager.add(&gui, bGui);
 	guiManager.add(&transformNode.gui);
-	guiManager.add(&browserFonts.gui, browserFonts.bGui);
+	guiManager.add(&filesBrowserFonts.gui, filesBrowserFonts.bGui);
 	guiManager.startup();
 
 	gui.getGroup(paramsInternal.getName()).minimize();
@@ -306,14 +308,31 @@ void ofxSurfing3dText::setupGui() {
 	gui.getGroup(paramsFont.getName()).minimize();
 	gui.getGroup(paramsMeshDeform.getName()).minimize();
 
-	//guiTransformNode.getGroup(transformNode.paramsResets.getName()).minimize();
+	refreshGui();
 }
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::startup() {
 	ofLogNotice("ofxSurfing3dText") << "startup()";
 
-	load();
+	bool b = load();
+
+	if (!b) {
+		ofLogNotice("ofxSurfing3dText") << "No settings files found!";
+		doResetTransform();
+	}
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::doResetTransform() {
+	ofLogNotice("ofxSurfing3dText") << "doResetTransform()";
+
+	//TODO
+	#if 0
+	transformNode.scaleNormalizedPow = 5;
+	transformNode.positionNormalized = { 0, .05f, 0 };
+	transformNode.bDebug
+#endif
 }
 
 //--------------------------------------------------------------
@@ -398,7 +417,7 @@ void ofxSurfing3dText::setup() {
 void ofxSurfing3dText::setupFontsBowser(string path) {
 	ofLogNotice("ofxSurfing3dText") << "setupFontsBowser()";
 
-	browserFonts.setupFonts(path);
+	filesBrowserFonts.setupFonts(path);
 }
 
 //--------------------------------------------------------------
@@ -427,7 +446,7 @@ void ofxSurfing3dText::update() {
 		buildHelp();
 	}
 
-	//browserFonts.updateAutoSwitch();
+	//filesBrowserFonts.updateAutoSwitch();
 }
 
 //--------------------------------------------------------------
@@ -471,38 +490,19 @@ void ofxSurfing3dText::drawGui() {
 
 	guiManager.draw();
 
-	if (browserFonts.bGui) {
-		//browserFonts.drawGui();
-		browserFonts.drawHelp(true);
+	if (filesBrowserFonts.bGui) {
+		//filesBrowserFonts.drawGui();
+		filesBrowserFonts.drawHelp(true);
 		auto r = guiManager.getShapePanels();
-		glm::vec2 p = r.getTopRight() + glm::vec2(SURFING__OFXGUI__PAD_BETWEEN_PANELS, 0);
-		browserFonts.drawPreview(p.x, p.y);
+		float pad = SURFING__OFXGUI__PAD_BETWEEN_PANELS * 2;
+		glm::vec2 p = r.getTopRight() + glm::vec2(pad, 0);
+		filesBrowserFonts.drawPreview(p.x, p.y);
 	}
 
 	drawHelp();
 }
 
-//--------------------------------------------------------------
-void ofxSurfing3dText::refreshGui(ofxPanel & gui_, string name_) {
-
-	ofLogNotice("ofxSurfing3dText") << "refreshGui(ofxPanel,name)";
-
-	gui.setPosition(SURFING__PAD_TO_WINDOW_BORDERS, SURFING__PAD_TO_WINDOW_BORDERS);// top-left
-
-	gui.getGroup(name_).getGroup(paramsInternal.getName()).minimize();
-
-	transformNode.refreshGui(gui_, name_);
-}
-
-//--------------------------------------------------------------
-void ofxSurfing3dText::refreshGui(ofxPanel & gui_, ofParameterGroup & group_) {
-
-	ofLogNotice("ofxSurfing3dText") << "refreshGui(ofxPanel,ofParameterGroup)";
-
-	gui.setPosition(SURFING__PAD_TO_WINDOW_BORDERS, SURFING__PAD_TO_WINDOW_BORDERS);// top-left
-
-	refreshGui(gui_, group_.getName());
-}
+//--
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::refreshGui() {
@@ -510,19 +510,25 @@ void ofxSurfing3dText::refreshGui() {
 
 	ofLogNotice("ofxSurfing3dText") << "refreshGui()";
 
-	gui.setPosition(SURFING__PAD_TO_WINDOW_BORDERS, SURFING__PAD_TO_WINDOW_BORDERS);// top-left
-
-	gui.getGroup(parameters.getName()).getGroup(paramsInternal.getName()).minimize();
+	transformNode.refreshGui();
 }
 
-////--------------------------------------------------------------
-//void ofxSurfing3dText::refreshGui(ofxPanel & gui_) {
-//	//if (!guiManager.bAutoLayout) return;
-//
-//	ofLogNotice("ofxSurfing3dText") << "refreshGui(ofxPanel)";
-//
-//	refreshGui(gui_);
-//}
+//--------------------------------------------------------------
+void ofxSurfing3dText::refreshGuiUserParams(ofxPanel & gui_, ofxGuiGroup & group_) {
+	ofLogNotice("ofxSurfing3dText") << "refreshGuiUserParams(ofxPanel,ofxGuiGroup)";
+
+	transformNode.refreshGuiUserParams(gui_, group_);
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::refreshGuiUserParams(ofxPanel & gui_) {
+	ofLogNotice("ofxSurfing3dText") << "refreshGuiUserParams(ofxPanel)";
+
+	ofxGuiGroup & g = gui_.getGroup(this->getName()).getGroup("TransformNode");
+	this->refreshGuiUserParams(gui_, g);
+}
+
+//--
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::buildHelp() {
@@ -704,7 +710,7 @@ void ofxSurfing3dText::drawBounds() {
 
 		ofPushStyle();
 		{
-			//if (indexModeDeform == 0) 
+			//if (indexModeDeform == 0)
 			{
 				if (bDrawBBox) {
 					ofPushMatrix();
