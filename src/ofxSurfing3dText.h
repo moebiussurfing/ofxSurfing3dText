@@ -117,9 +117,14 @@ private:
 public:
 	void drawGui();
 
-private:
+	//TODO
 	void refreshGui();
+	//void refreshGui(ofxPanel & gui_);
+	//public method to be used on parent gui panels!
+	void refreshGui(ofxPanel & gui_, string name_);
+	void refreshGui(ofxPanel & gui_, ofParameterGroup & group_);
 
+private:
 	void drawHelp();
 	void buildHelp();
 	bool bFlagBuildHelp = false;
@@ -149,6 +154,7 @@ public:
 
 public:
 	ofParameterGroup parameters;
+	ofParameterGroup paramsPreset;//some selected object to be used on presets manager or user/UI
 	
 	ofParameterGroup paramsFile;
 	ofEventListener listenerIndex; //get class internal index changed

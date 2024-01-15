@@ -5,24 +5,16 @@ void ofApp::setup() {
 
 #if 1
 	ofxSurfing::setWindowTitleAsProjectName();
-	ofxSurfing::setWindowAtMonitor(1);
-	ofxSurfing::setOfxGuiTheme(true);
+	ofxSurfing::setWindowAtMonitor(-1);
+	ofxSurfing::setOfxGuiTheme(0);
 #endif
 
 	t.setup();
 
-	// select only what we want to store, 
+	// select only what we want to store,
 	// to simplify or adapt to our workflow.
-	paramsPreset.setName("TEXT");
-
-	//letters
-	paramsPreset.add(t.extrusion);
-	paramsPreset.add(t.letterSpacing);
-	paramsPreset.add(t.heightLine);
-	paramsPreset.add(t.pathFont);
-
-	//transform
-	paramsPreset.add(t.transformNode.paramsPreset);
+	paramsPreset.setName("TEXT_PARAMS");
+	paramsPreset.add(t.paramsPreset);
 
 	presets.setKitName("TEXT\\Presets");
 	presets.setup(paramsPreset);
@@ -35,13 +27,15 @@ void ofApp::setup() {
 	paramsApp.add(presets.bGui);
 	paramsApp.add(t.bGui);
 	paramsApp.add(pbr.bGui);
-	gui.setup(paramsApp);
+	guiApp.setup(paramsApp);
 
-	//refresh
-	ofxSurfing::setGuiPositionToLayout(gui, ofxSurfing::SURFING_LAYOUT_BOTTOM_LEFT);
+	//refresh layout
+	ofxSurfing::setGuiPositionToLayout(guiApp, ofxSurfing::SURFING_LAYOUT_BOTTOM_LEFT);
+
 	//TODO
-	t.transformNode.refreshGui(presets.guiParams, "TEXT_PRESET");
-	//t.transformNode.refreshGui(presets.guiParams, presets.parameters);
+	//t.refreshGui(presets.guiParams, "TEXT_NODE");
+	//t.refreshGui(presets.guiParams, presets.parameters);
+	//TODO: fix bc seems renamed on runtime..?
 }
 
 //--------------------------------------------------------------
@@ -69,7 +63,7 @@ void ofApp::drawGui() {
 	t.drawGui();
 	presets.drawGui();
 
-	gui.draw();
+	guiApp.draw();
 }
 
 //--------------------------------------------------------------
@@ -95,7 +89,7 @@ void ofApp::drawMyScene() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-	ofLogNotice(__FUNCTION__) << " : " << key;
+	ofLogNotice(__FUNCTION__) << ": " << key;
 }
 
 //--------------------------------------------------------------

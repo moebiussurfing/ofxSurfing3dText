@@ -16,16 +16,16 @@ public:
 	void keyPressed(int key);
 	void windowResized(int w, int h);
 
-	ofEasyCam camera;
 	ofxSurfingPBR pbr;
+	ofEasyCam camera;
 	void renderScene();
 	void drawMyScene();
-	
+
 	ofxSurfing3dText t;
 
 	ofParameterGroup paramsPreset;
 	SurfingPresetsLiteOfxGui presets;
 
-	ofxPanel gui;
+	ofxPanel guiApp;
 	ofParameterGroup paramsApp;
 };

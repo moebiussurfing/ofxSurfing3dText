@@ -145,8 +145,9 @@ void ofxSurfing3dText::setupParams() {
 
 	textMessage.set("Text", "Eternteinment");
 
-	extrusion.set("Extrusion", 100, 0, 1000);
-	sizeFont.set("Size font", 100, 10, 1000);
+	int u= SURFING__PBR__SCENE_SIZE_UNIT / 5;
+	extrusion.set("Extrusion", 100, 0, u);
+	sizeFont.set("Size font", 100, 10, u);
 
 #ifdef SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
 	lineWidth.set("Line Width", 1000, 0, 10000);
@@ -221,6 +222,7 @@ void ofxSurfing3dText::setupParams() {
 
 	//--
 
+	transformNode.setName("TEXT_NODE");
 	transformNode.setup();
 	//transformNode.setEnableGui(true);
 	//transform.setPowRatio(0.01);
@@ -264,6 +266,19 @@ void ofxSurfing3dText::setupParams() {
 
 		//browserFonts.fontsBook.indexFont.set(i);
 	});
+
+	//--
+
+	paramsPreset.setName("TEXT_PRESET");
+	
+	//letters
+	paramsPreset.add(extrusion);
+	paramsPreset.add(letterSpacing);
+	paramsPreset.add(heightLine);
+	paramsPreset.add(pathFont);
+
+	//transform
+	paramsPreset.add(transformNode.paramsPreset);
 
 	//--
 
@@ -468,17 +483,46 @@ void ofxSurfing3dText::drawGui() {
 }
 
 //--------------------------------------------------------------
+void ofxSurfing3dText::refreshGui(ofxPanel & gui_, string name_) {
+
+	ofLogNotice("ofxSurfing3dText") << "refreshGui(ofxPanel,name)";
+
+	gui.setPosition(SURFING__PAD_TO_WINDOW_BORDERS, SURFING__PAD_TO_WINDOW_BORDERS);// top-left
+
+	gui.getGroup(name_).getGroup(paramsInternal.getName()).minimize();
+
+	transformNode.refreshGui(gui_, name_);
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::refreshGui(ofxPanel & gui_, ofParameterGroup & group_) {
+
+	ofLogNotice("ofxSurfing3dText") << "refreshGui(ofxPanel,ofParameterGroup)";
+
+	gui.setPosition(SURFING__PAD_TO_WINDOW_BORDERS, SURFING__PAD_TO_WINDOW_BORDERS);// top-left
+
+	refreshGui(gui_, group_.getName());
+}
+
+//--------------------------------------------------------------
 void ofxSurfing3dText::refreshGui() {
-	if (!guiManager.bAutoLayout) return;
+	//if (!guiManager.bAutoLayout) return;
 
 	ofLogNotice("ofxSurfing3dText") << "refreshGui()";
 
-	// top-left
-	gui.setPosition(SURFING__PAD_TO_WINDOW_BORDERS, SURFING__PAD_TO_WINDOW_BORDERS);
+	gui.setPosition(SURFING__PAD_TO_WINDOW_BORDERS, SURFING__PAD_TO_WINDOW_BORDERS);// top-left
 
-	// minimize sub panels
 	gui.getGroup(parameters.getName()).getGroup(paramsInternal.getName()).minimize();
 }
+
+////--------------------------------------------------------------
+//void ofxSurfing3dText::refreshGui(ofxPanel & gui_) {
+//	//if (!guiManager.bAutoLayout) return;
+//
+//	ofLogNotice("ofxSurfing3dText") << "refreshGui(ofxPanel)";
+//
+//	refreshGui(gui_);
+//}
 
 //--------------------------------------------------------------
 void ofxSurfing3dText::buildHelp() {
