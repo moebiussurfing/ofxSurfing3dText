@@ -20,7 +20,7 @@
 class SurfingFilesBrowserFonts : public SurfingFilesBrowser {
 public:
 	SurfingFilesBrowserFonts() {
-		ofLogNotice("ofxSurfingPBR") << "SurfingFilesBrowserFonts:SurfingFilesBrowserFonts()";
+		//ofLogNotice("ofxSurfingPBR") << "SurfingFilesBrowserFonts:SurfingFilesBrowserFonts()";
 
 		//paramsUser.setName("FONTS_BROWSER");
 		////paramsUser.add(bGui);
@@ -29,7 +29,7 @@ public:
 	}
 
 	~SurfingFilesBrowserFonts() {
-		ofLogNotice("ofxSurfingPBR") << "SurfingFilesBrowserFonts:~SurfingFilesBrowserFonts()";
+		//ofLogNotice("ofxSurfingPBR") << "SurfingFilesBrowserFonts:~SurfingFilesBrowserFonts()";
 	}
 
 private:

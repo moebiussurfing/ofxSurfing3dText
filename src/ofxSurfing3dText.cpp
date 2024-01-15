@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------
 ofxSurfing3dText::ofxSurfing3dText() {
-	ofLogNotice("ofxSurfing3dText") << "~ofxSurfing3dText() Constructor";
+	ofLogNotice("ofxSurfing3dText") << "Constructor";
 
 	ofAddListener(ofEvents().update, this, &ofxSurfing3dText::update);
 	ofAddListener(ofEvents().keyPressed, this, &ofxSurfing3dText::keyPressed);
@@ -10,7 +10,7 @@ ofxSurfing3dText::ofxSurfing3dText() {
 
 //--------------------------------------------------------------
 ofxSurfing3dText::~ofxSurfing3dText() {
-	ofLogNotice("ofxSurfing3dText") << "~ofxSurfing3dText() Destructor";
+	ofLogNotice("ofxSurfing3dText") << "Destructor";
 
 	ofRemoveListener(ofEvents().update, this, &ofxSurfing3dText::update);
 	ofRemoveListener(ofEvents().keyPressed, this, &ofxSurfing3dText::keyPressed);
@@ -86,10 +86,6 @@ void ofxSurfing3dText::ChangedFont(ofAbstractParameter & e) {
 
 	//-
 
-	//else if (name == textMessage.getName()) {
-	//	bFlagSetupText = true;
-	//}
-
 	else if (name == bUppercase.getName()) {
 		bFlagSetupText = true;
 	}
@@ -101,6 +97,10 @@ void ofxSurfing3dText::ChangedFont(ofAbstractParameter & e) {
 	else if (name == bAnim.getName()) {
 		bFlagSetupText = true;
 	}
+
+	//else if (name == textMessage.getName()) {
+	//	bFlagSetupText = true;
+	//}
 
 	//else if (name == bKeys.getName()) {
 	//	buildHelp();
