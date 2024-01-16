@@ -1,15 +1,10 @@
 /*
 	TODO
 
-	add presets manger.
-
 	add sceneManager 
 		with public methods to pbr
 		add material
 		begin/end material
-
-	fonts browser using file browser helper
-		try to speed up pre loading all fonts..
 */
 
 //--
@@ -132,7 +127,7 @@ private:
 	string sHelp = "";
 
 	void update();
-	void updateAnim();
+	void updateAnimMode0();
 	void update(ofEventArgs & args);
 
 	void keyPressed(int key);
@@ -179,6 +174,9 @@ public:
 	ofParameter<int> indexModeDeform;
 	ofParameter<float> powerDeform;
 	ofParameter<bool> bAnim;
+	ofParameter<float> rotateChars;
+	ofParameter<float> control1;
+	ofParameter<float> control2;
 
 	ofParameter<void> vResetFont;
 	ofParameter<ofFloatColor> color;
@@ -192,7 +190,7 @@ private:
 
 public:
 	void doResetFont();
-	void doResetTransform();
+	//void doResetTransform();
 
 public:
 	ofParameterGroup paramsInternal;
@@ -204,7 +202,7 @@ public:
 	ofParameterGroup paramsDraw;
 	ofParameterGroup paramsDebug;
 	ofParameter<bool> bDrawMeshes;
-	ofParameter<bool> bDrawBounds;
+	ofParameter<bool> bDrawBBoxBounds;
 	ofParameter<bool> bDrawBBox;
 
 	ofxPanel gui;

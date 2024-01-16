@@ -24,6 +24,8 @@
 #include <functional>
 using callback_t = std::function<void()>;
 
+//#define SURFING__USE__INDEX_ANIM
+
 // Optional
 // Requires to check previously
 // the sanity of the files you pretend to load!
@@ -98,7 +100,9 @@ public:
 	ofParameter<bool> bModeAll { "Mode All", false };
 	ofParameter<bool> bAutoSwitch { "Auto Switch", false }; //auto switch to next model
 	ofParameter<float> timeAutoSwitch { "Time Switch", 2, 0.05, 10 };
+#ifdef SURFING__USE__INDEX_ANIM
 	ofParameter<int> indexAnimation { "Index Anim", -1, -1, -1 };
+#endif
 
 public:
 	void setup(string path = "") { //set path for files. default is bin/data/files/
@@ -195,7 +199,9 @@ public:
 		switcherParams.setName("Switcher");
 		switcherParams.add(bAutoSwitch);
 		switcherParams.add(timeAutoSwitch);
+		#ifdef SURFING__USE__INDEX_ANIM
 		switcherParams.add(indexAnimation);
+		#endif
 
 		paramsExtra.setName("Extra");
 		paramsExtra.add(bModeAll);
@@ -219,6 +225,7 @@ public:
 			}
 		});
 
+#ifdef SURFING__USE__INDEX_ANIM
 		listenerAnimationIndex = indexAnimation.newListener([this](int & i) {
 			static int i_ = -1;
 			if (i != i_) { //check that changed
@@ -226,6 +233,7 @@ public:
 				i_ = i;
 			}
 		});
+#endif
 
 		listenerNext = vNext.newListener([this](void) {
 			doNext();

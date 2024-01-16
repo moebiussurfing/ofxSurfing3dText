@@ -45,6 +45,9 @@ public:
 		//	parameters.add(bDrawPreviews);
 		//	parameters.add(indexFont);
 		//	parameters.add(sizeFont);
+		
+		float wmax = 0;
+		float hmax = 0;
 
 		#if 0
 		listenerSizeFont = sizeFont.newListener([this](float & v) {
@@ -108,7 +111,7 @@ public:
 
 		if (fontDir.size() == 0) ofLogError("ofxFontsBook") << "Path " << path_ << " not found!";
 
-		#if 0
+		#if 1
 		size_t size = sizeFont;
 		#else
 		size_t size = 12;
@@ -132,7 +135,7 @@ public:
 
 		y_ += 17; //offset
 
-		// bg
+		// bb bg
 		//static float wmax = 0;
 		//static float hmax = 0;
 		int pad = 5;
