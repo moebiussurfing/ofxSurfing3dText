@@ -24,7 +24,7 @@ public:
 
 		//paramsUser.setName("FONTS_BROWSER");
 		////paramsUser.add(bGui);
-		//paramsUser.add(bDraw);
+		//paramsUser.add(bDrawPreview);
 		//paramsUser.add(bModeAutoload);
 	}
 
@@ -40,7 +40,7 @@ private:
 		parameters.add(paramsExtra);
 		//parameters.add(paramsUser);
 
-		parameters.add(bDraw);
+		parameters.add(bDrawPreview);
 		//parameters.add(fontsBook.sizeFont);
 
 		parameters.add(bKeys);
@@ -96,7 +96,7 @@ public:
 
 	ofParameter<string> pathFonts;
 
-	ofParameter<bool> bDraw { "Draw Previews", true };
+	ofParameter<bool> bDrawPreview { "Draw Previews", true };
 	ofParameter<bool> bModeAutoload { "Mode Autoload", false };
 
 	//ofParameterGroup paramsUser;
@@ -117,7 +117,7 @@ public:
 
 		paramsExtra.add(pathFonts);
 
-		fontsBook.bDrawPreviews.makeReferenceTo(bDraw);
+		fontsBook.bDrawPreviews.makeReferenceTo(bDrawPreview);
 
 		//TODO: link
 		//indexFile.makeReferenceTo(fontsBook.indexFont);

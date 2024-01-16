@@ -6,12 +6,12 @@ void ofApp::setup() {
 #if 1
 	ofxSurfing::setWindowTitleAsProjectName();
 	ofxSurfing::setWindowAtMonitor(-1);
-	ofxSurfing::setOfxGuiTheme(1);
+	ofxSurfing::setOfxGuiTheme();
 #endif
 
 	//--
 
-	// text
+	// Text
 
 	text3d.setup();
 
@@ -33,7 +33,7 @@ void ofApp::setup() {
 	paramsPreset.add(text3d.paramsPreset);
 	//paramsPreset.add(pbr.paramsPreset);//TODO
 
-	//presets.setKitName("TEXT\\Presets"); // Optional: custom subpath!
+	//presets.setKitName("TEXT\\Presets"); // Optional: custom sub path for multiple preset kits!
 	presets.setup(paramsPreset);
 	text3d.refreshGuiUserParams(presets.guiParams);
 
@@ -75,7 +75,6 @@ void ofApp::drawGui() {
 	pbr.drawGui();
 	text3d.drawGui();
 	presets.drawGui();
-
 	guiApp.draw();
 }
 
@@ -93,7 +92,7 @@ void ofApp::drawMyScene() {
 	pbr.beginMaterial();
 	{
 		text3d.drawMeshes();
-		pbr.drawTestScene();
+		pbr.drawTestScene();//must be enable on PBR_SCENE/TestScene/Draw TestScene
 	}
 	pbr.endMaterial();
 
