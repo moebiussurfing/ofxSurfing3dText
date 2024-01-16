@@ -28,4 +28,6 @@ public:
 
 	ofxPanel guiApp;
 	ofParameterGroup paramsApp;
+
+bool bGui = true;
 };

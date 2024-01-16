@@ -284,9 +284,10 @@ void ofxSurfing3dText::setupParamsPreset() {
 	paramsPresetFont.add(extrusion);
 	paramsPresetFont.add(letterSpacing);
 	paramsPresetFont.add(heightLine);
+	paramsPresetFont.add(rotateChars);
 
-	paramsPresetFont.add(nameFont);
 	paramsPresetFont.add(getIndexParam());
+	paramsPresetFont.add(nameFont);
 
 	paramsPreset.add(paramsPresetFont);
 
@@ -532,7 +533,11 @@ void ofxSurfing3dText::refreshGuiUserParams(ofxPanel & gui_, ofxGuiGroup & group
 void ofxSurfing3dText::refreshGuiUserParams(ofxPanel & gui_) {
 	ofLogNotice("ofxSurfing3dText") << "refreshGuiUserParams(ofxPanel)";
 
-	ofxGuiGroup & g = gui_.getGroup(this->getName()).getGroup("TransformNode");
+	//TODO
+	ofxGuiGroup & g = gui_.getGroup(paramsPreset.getName());
+	//ofxGuiGroup & g = gui_.getGroup(this->getName()).getGroup(paramsPreset.getName());
+	//ofxGuiGroup & g = gui_.getGroup(this->getName()).getGroup("TransformNode");
+	//ofxGuiGroup & g = gui_.getGroup(this->getName()).getGroup("TEXT_PRESET");
 	this->refreshGuiUserParams(gui_, g);
 }
 

@@ -35,7 +35,11 @@ void ofApp::setup() {
 
 	//presets.setKitName("TEXT\\Presets"); // Optional: custom sub path for multiple preset kits!
 	presets.setup(paramsPreset);
-	text3d.refreshGuiUserParams(presets.guiParams);
+	
+	//TODO
+	//refresh gui
+	//text3d.refreshGuiUserParams(presets.guiParams, presets.guiParams.getGroup(paramsPreset.getName()));
+	//text3d.refreshGuiUserParams(presets.guiParams);
 
 	//--
 
@@ -70,6 +74,8 @@ void ofApp::drawScene() {
 
 //--------------------------------------------------------------
 void ofApp::drawGui() {
+	if (!bGui) return;
+
 	ofDisableDepthTest();
 
 	pbr.drawGui();
@@ -102,6 +108,8 @@ void ofApp::drawMyScene() {
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
 	ofLogNotice(__FUNCTION__) << ": " << key;
+
+	if (key == 'g') bGui = !bGui;
 }
 
 //--------------------------------------------------------------
