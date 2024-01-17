@@ -257,6 +257,10 @@ void ofxSurfing3dText::setupParams() {
 
 	paramsInternal.setName("Internal");
 	paramsInternal.add(bGui);
+#ifdef SURFING__USE__IMGUI
+	surfingImGuizmo.setup("NodeGizmo");
+	paramsInternal.add(surfingImGuizmo.parameters);
+#endif
 	parameters.add(paramsInternal);
 
 	parameters.add(bDebug);
@@ -399,6 +403,7 @@ void ofxSurfing3dText::drawImGui() {
 
 			ui.AddSpacingSeparated();
 
+			//SurfingGuiGroupStyle flags = SurfingGuiGroupStyle_None;
 			SurfingGuiGroupStyle flags = SurfingGuiGroupStyle_Collapsed;
 			ui.AddGroup(parameters, flags);
 
@@ -407,7 +412,10 @@ void ofxSurfing3dText::drawImGui() {
 
 		if (ui.BeginWindowSpecial(transformNode.bGui)) {
 			ui.AddGroup(transformNode.parameters);
+			#if 0
+			ui.AddSpacingBigSeparated();
 			ui.AddGroup(transformNode.paramsPreset);
+			#endif
 
 			ui.EndWindowSpecial();
 		}
@@ -425,6 +433,7 @@ void ofxSurfing3dText::drawImGui() {
 	ui.End();
 }
 #endif
+
 //--------------------------------------------------------------
 void ofxSurfing3dText::startup() {
 	ofLogNotice("ofxSurfing3dText") << "startup()";

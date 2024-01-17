@@ -15,8 +15,9 @@
 	- add refreshGui by passing transfromGroup. like presets groups
 	- allow mode for linked or independent scale for xyz
 		- fix lock all axis to x 
-	- add simple example?
 	- add bbox for selected model
+	- reduce some feedback callbacks
+	- add simple example?
 */
 
 //--
@@ -81,6 +82,11 @@ public:
 	ofParameterGroup paramsOfNode;
 	ofParameterGroup paramsResets;
 
+private:
+	bool bAttendingPosition = false;
+	bool bAttendingScale = false;
+	bool bAttendingOrientation = false;
+
 public:
 	ofParameter<void> vReset { "Reset" };
 	ofParameter<void> vResetScale { "Reset Scale" };
@@ -97,9 +103,8 @@ private:
 	string path = "";
 	bool bDoneSetup = false;
 
-	bool bAttendingScale = false;
-
 public:
+	//preset
 	ofxPanel gui;
 	ofParameter<bool> bGui;
 	ofParameterGroup paramsPreset;
@@ -115,7 +120,7 @@ private:
 
 		// build preset group
 		if (name == "") name = "Transform";
-		//name = "UI " + name; 
+		//name = "UI " + name;
 		bGui.set(name, true);
 
 		paramsPreset.setName(name);
@@ -182,21 +187,6 @@ public:
 		ofAddListener(parameters.parameterChangedE(), this, &TransformNode::Changed);
 	}
 
-	//TransformNode(const TransformNode & other)
-	//	: bDraw(other.bDraw)
-	//	, scaleNormalizedPow(other.scaleNormalizedPow)
-	//	, scaleNormalized(other.scaleNormalized)
-	//	, positionNormalized(other.positionNormalized)
-	//	, rotationEuler(other.rotationEuler)
-	//	, vReset(other.vReset)
-	//	, vResetScale(other.vResetScale)
-	//	, vResetPosition(other.vResetPosition)
-	//	, vResetRotation(other.vResetRotation)
-	//	, parameters(other.parameters)
-	//{
-	//	setup();
-	//}
-
 	TransformNode(const TransformNode & other) {
 		ofLogNotice("TransformNode") << "Constructor";
 
@@ -245,7 +235,7 @@ private:
 	std::unique_ptr<ofEventListener> e_vResetRotation;
 	std::unique_ptr<ofEventListener> e_vReset;
 
-	std::unique_ptr<ofEventListener> e_positionNormalizedChanged;
+	std::unique_ptr<ofEventListener> e_positionNormalized;
 	std::unique_ptr<ofEventListener> e_scaleNormalized;
 	std::unique_ptr<ofEventListener> e_scaleNormalizedPow;
 	std::unique_ptr<ofEventListener> e_rotatioEulerChanged; //TODO
@@ -260,20 +250,20 @@ public:
 		parameters.setName("TRANSFORM");
 
 		paramsOfNode.setName("ofNode");
-		paramsOfNode.add(scale);
 		paramsOfNode.add(position);
 		paramsOfNode.add(rotationEuler);
+		paramsOfNode.add(scale);
 
 		paramsScaleNormalized.setName("Scale Normalized");
-		paramsScaleNormalized.add(scaleNormalizedPow);
 		paramsScaleNormalized.add(scaleNormalized);
+		paramsScaleNormalized.add(scaleNormalizedPow);
 		paramsScaleNormalized.add(bScaleLinkAxis); //TODO
 
 		parameters.add(bDraw);
 		parameters.add(bDebug);
-		parameters.add(paramsOfNode);
-		parameters.add(paramsScaleNormalized);
 		parameters.add(positionNormalized);
+		parameters.add(paramsScaleNormalized);
+		parameters.add(paramsOfNode);
 
 		paramsResets.setName("Resets");
 		paramsResets.add(vResetScale);
@@ -329,8 +319,9 @@ public:
 		resetRotation();
 	}
 	void resetScale() {
-		scaleNormalized = 0;
 		//scaleNormalizedPow = scaleNormalizedPowMax/2;
+		scaleNormalizedPow = 5;
+		scaleNormalized = 0;
 	}
 	void resetPosition() {
 		positionNormalized = glm::vec3(0);
@@ -353,10 +344,16 @@ public:
 
 		// Transform
 
-		e_positionNormalizedChanged = std::make_unique<ofEventListener>(positionNormalized.newListener([this](glm::vec3) {
+		e_positionNormalized = std::make_unique<ofEventListener>(positionNormalized.newListener([this](glm::vec3) {
 			ofLogNotice(__FUNCTION__);
 
 			refreshPositionFromNormalized();
+		}));
+
+		e_scaleNormalized = std::make_unique<ofEventListener>(scaleNormalized.newListener([this](float) {
+			ofLogNotice(__FUNCTION__);
+
+			refreshScaleFromNormalized();
 		}));
 
 		e_scaleNormalizedPow = std::make_unique<ofEventListener>(scaleNormalizedPow.newListener([this](float) {
@@ -365,12 +362,6 @@ public:
 			//adapt param range
 			scaleNormalizedUnit = scaleNormalizedRatio * scaleNormalizedPow;
 			scale.setMax(glm::vec3(scaleNormalizedUnit, scaleNormalizedUnit, scaleNormalizedUnit));
-
-			refreshScaleFromNormalized();
-		}));
-
-		e_scaleNormalized = std::make_unique<ofEventListener>(scaleNormalized.newListener([this](float) {
-			ofLogNotice(__FUNCTION__);
 
 			refreshScaleFromNormalized();
 		}));
@@ -447,7 +438,7 @@ public:
 
 	//--
 
-	// Update params from ofNode
+	// Update ofParams from ofNode
 
 	void onPositionChanged() override {
 		if (position.get() != getPosition()) {
@@ -460,21 +451,6 @@ public:
 		}
 	}
 
-	void onOrientationChanged() override {
-		// compare the two objects with an epsilon of 0.001
-		bool bEqual = glm::all(glm::epsilonEqual(rotationEuler.get(), getOrientationEuler(), 0.001f));
-
-		if (!bEqual) {
-			ofLogNotice(__FUNCTION__);
-
-			//ofLogNotice() << "rotationEuler:" << rotationEuler;
-			//ofLogNotice() << "getOrientationEuler():" << getOrientationEuler();
-
-			//TODO
-			//refreshEulerRotationFromOfNodeOrientation();
-		}
-	}
-
 	void onScaleChanged() override {
 		if (bAttendingScale) return;
 
@@ -483,7 +459,24 @@ public:
 
 			scale.set(getScale());
 		}
+
 		//TODO: apply to normalized scale
+		refreshScaleToNormalized();
+	}
+
+	void onOrientationChanged() override {
+		// compare the two objects with an epsilon of 0.001
+		bool bDiff = glm::all(glm::epsilonEqual(rotationEuler.get(), getOrientationEuler(), 0.001f));
+
+		if (bDiff) {
+			ofLogNotice(__FUNCTION__);
+
+			//ofLogNotice() << "rotationEuler:" << rotationEuler;
+			//ofLogNotice() << "getOrientationEuler():" << getOrientationEuler();
+
+			//TODO
+			refreshEulerRotationFromOfNodeOrientation();
+		}
 	}
 
 	//--
@@ -503,7 +496,7 @@ public:
 		ofLogNotice(__FUNCTION__);
 
 		//apply to normalized
-		const float u = position.getMax().x; //distance unit assumed the same for the three axis
+		const float u = position.getMax().x; // unit assumed the same for the three axis
 		float x = ofMap(position.get().x, -u, u, -1, 1, true);
 		float y = ofMap(position.get().y, -u, u, -1, 1, true);
 		float z = ofMap(position.get().z, -u, u, -1, 1, true);
@@ -532,11 +525,43 @@ public:
 		_setScale(glm::vec3(s, s, s));
 	}
 
+	void refreshScaleToNormalized() {
+		ofLogNotice(__FUNCTION__);
+
+		//TODO
+		float sx = 0;
+		float s = scale.get().x;
+		const float u = scale.getMax().x; // unit assumed the same for the three axis
+
+		sx = ofMap(s, scale.getMin().x, scale.getMax().x, -1, 1, true);
+
+		//if (s == 0) {
+		//	sx = 0;
+		//} else if (s < scaleNormalizedPow * scaleNormalizedRatio) {
+		//	sx = ofMap(s, 0, scaleNormalizedPow / scaleNormalizedRatio, 0, -1, true);
+		//}
+		//if (s > 0) {
+		//	sx = ofMap(s, 0, scaleNormalizedPow * scaleNormalizedRatio, 0, 1, true);
+		//}
+
+		//TODO: link
+		if (bScaleLinkAxis) {
+			scaleNormalized.set(sx);
+		}
+	}
+
 	void refreshEulerRotationFromOfNodeOrientation() {
 		ofLogNotice(__FUNCTION__);
 
+		//TODO
+		return;
+
+		//bAttendingOrientation = true;
+
 		glm::vec3 r = rotationEuler.get();
 		_setRotation(r);
+
+		//bAttendingOrientation = false;
 	}
 
 	//--
