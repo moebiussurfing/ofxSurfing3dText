@@ -205,6 +205,7 @@ public:
 
 		paramsExtra.setName("Extra");
 		paramsExtra.add(bModeAll);
+		paramsExtra.add(bGui);
 		paramsExtra.add(switcherParams);
 
 		parameters.setName(sTitle);
@@ -440,8 +441,8 @@ public:
 
 		sTitle = s;
 
-		string n;
-		n = "UI " + s;
+		string n = s;
+		//n = "UI " + n;
 		bGui.setName(n);
 	}
 
@@ -475,6 +476,7 @@ public:
 	ofParameter<bool> bKeys { "Keys", false };
 
 	void drawHelp(bool bBottom = false) {
+		if (!bGui) return;
 		if (!bHelp) return;
 
 		if (bBottom)

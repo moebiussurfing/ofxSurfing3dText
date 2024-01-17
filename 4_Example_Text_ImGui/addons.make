@@ -1,0 +1,6 @@
+ofxGui
+ofxImGui
+ofxImGuizmo
+ofxSurfing3dText
+ofxSurfingHelpersLite
+ofxSurfingImGui

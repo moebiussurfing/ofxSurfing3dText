@@ -19,6 +19,40 @@ ofxSurfing3dText::~ofxSurfing3dText() {
 	ofRemoveListener(paramsFont.parameterChangedE(), this, &ofxSurfing3dText::ChangedFont);
 }
 
+// Camera
+//--------------------------------------------------------------
+void ofxSurfing3dText::setup(ofCamera & camera_) {
+	setCameraPtr(dynamic_cast<ofCamera *>(&camera_));
+
+	this->setup();
+}
+//--------------------------------------------------------------
+void ofxSurfing3dText::setCameraPtr(ofCamera & camera_) {
+	setCameraPtr(dynamic_cast<ofCamera *>(&camera_));
+}
+//--------------------------------------------------------------
+void ofxSurfing3dText::setCameraPtr(ofCamera * camera_) {
+	camera = camera_;
+
+	////FORCED
+	//camera->setFarClip(SURFING__PBR__SCENE_CAMERA_FAR_CLIP);
+}
+//--------------------------------------------------------------
+ofCamera * ofxSurfing3dText::getOfCameraPtr() {
+	if (camera != nullptr)
+		return camera;
+	else
+		return nullptr;
+}
+//--------------------------------------------------------------
+ofEasyCam * ofxSurfing3dText::getOfEasyCamPtr() {
+	ofEasyCam * easyCam = dynamic_cast<ofEasyCam *>(camera);
+	if (easyCam != nullptr)
+		return easyCam;
+	else
+		return nullptr;
+}
+
 //--------------------------------------------------------------
 void ofxSurfing3dText::Changed(ofAbstractParameter & e) {
 
@@ -30,15 +64,11 @@ void ofxSurfing3dText::Changed(ofAbstractParameter & e) {
 		autoSaver.saveSoon();
 	}
 
-	bFlagBuildHelp = true;
-}
-
-//--------------------------------------------------------------
-void ofxSurfing3dText::ChangedTransform(ofAbstractParameter & e) {
-
-	if (e.isSerializable()) {
-		autoSaver.saveSoon();
+	if (name == bAnim.getName()) {
+		bFlagSetupText = true;
 	}
+
+	bFlagBuildHelp = true;
 }
 
 //--------------------------------------------------------------
@@ -90,10 +120,6 @@ void ofxSurfing3dText::ChangedFont(ofAbstractParameter & e) {
 	}
 
 	else if (name == extrusion.getName()) {
-		bFlagSetupText = true;
-	}
-
-	else if (name == bAnim.getName()) {
 		bFlagSetupText = true;
 	}
 
@@ -184,7 +210,8 @@ void ofxSurfing3dText::setupParams() {
 	paramsDraw.add(paramsDebug);
 
 	parameters.setName("3D_TEXT");
-	string n = "UI " + parameters.getName();
+	string n = parameters.getName();
+	//n = "UI " + n;
 	bGui.set(n, true);
 	parameters.add(paramsDraw);
 	//parameters.add(filesBrowserFonts.bGui);
@@ -206,8 +233,8 @@ void ofxSurfing3dText::setupParams() {
 
 	paramsFont.add(letterSpacing);
 	paramsFont.add(heightLine);
-	paramsFont.add(rotateChars);
 	paramsFont.add(bUppercase);
+	paramsFont.add(rotateChars);
 
 	paramsFont.add(paramsFile);
 	paramsFont.add(vResetFont);
@@ -270,6 +297,13 @@ void ofxSurfing3dText::setupParams() {
 
 	setupGui();
 
+#ifdef SURFING__USE__IMGUI
+	setupImGui();
+	bGui_ofxGui = false;
+#endif
+
+	//--
+
 	startup();
 }
 
@@ -302,9 +336,14 @@ void ofxSurfing3dText::setupGui() {
 	gui.setup(parameters);
 	ofxSurfing::setGuiPositionToLayout(gui, ofxSurfing::SURFING_LAYOUT_TOP_RIGHT);
 
+#ifdef SURFING__USE__IMGUI
+	guiManager.setAutoAddInternalParamasToMainPanel(false);
+	guiManager.setAutoHideFirstToggleVisibleForAnchorPanel(false);
+#endif
+
 	guiManager.setup(&gui);
 	guiManager.add(&gui, bGui);
-	guiManager.add(&transformNode.gui);
+	guiManager.add(&transformNode.gui, transformNode.bGui);
 	guiManager.add(&filesBrowserFonts.gui, filesBrowserFonts.bGui);
 	guiManager.startup();
 
@@ -319,6 +358,75 @@ void ofxSurfing3dText::setupGui() {
 	refreshGui();
 }
 
+#ifdef SURFING__USE__IMGUI
+//--------------------------------------------------------------
+void ofxSurfing3dText::setupImGui() {
+	ofLogNotice("ofxSurfing3dText") << "setupImGui()";
+
+	//surfingImGuizmo.setup();
+
+	//ui.setEnableHelpInternal(true);
+
+	ui.addWindowSpecial(bGui);
+	ui.addWindowSpecial(transformNode.bGui);
+	ui.addWindowSpecial(filesBrowserFonts.bGui);
+
+	//ui.startup();
+	//ui.setLinkedSpecialWindows(true);
+}
+
+//--------------------------------------------------------------
+void ofxSurfing3dText::drawImGui() {
+	if (!bGui) return;
+
+	ui.Begin();
+	{
+		//if (bGui) {
+		//	IMGUI_SUGAR__WINDOWS_CONSTRAINTSW_SMALL;
+		//	//float w = 500.f;
+		//	//ImVec2 size_min = ImVec2(w, w);
+		//	//ImVec2 size_max = ImVec2(-1, -1);
+		//	//ImGui::SetNextWindowSizeConstraints(size_min, size_max);
+		//}
+		if (ui.BeginWindowSpecial(bGui)) {
+			SurfingGuiTypes t = OFX_IM_TOGGLE_MEDIUM;
+			ui.Add(transformNode.bGui, t);
+			ui.Add(filesBrowserFonts.bGui, t);
+			ui.Add(bHelp, OFX_IM_TOGGLE_ROUNDED_SMALL);
+			//ui.AddLinekdWindowsToggle();
+
+			ui.AddSpacingSeparated();
+
+			surfingImGuizmo.drawImGuiUser(ui);
+
+			ui.AddSpacingSeparated();
+
+			SurfingGuiGroupStyle flags = SurfingGuiGroupStyle_Collapsed;
+			ui.AddGroup(parameters, flags);
+
+			ui.EndWindowSpecial();
+		}
+
+		if (ui.BeginWindowSpecial(transformNode.bGui)) {
+			ui.AddGroup(transformNode.parameters);
+			ui.AddGroup(transformNode.paramsPreset);
+
+			ui.EndWindowSpecial();
+		}
+
+		if (ui.BeginWindowSpecial(filesBrowserFonts.bGui)) {
+			ui.AddGroup(filesBrowserFonts.parameters);
+
+			ui.EndWindowSpecial();
+		}
+
+		//--
+
+		surfingImGuizmo.drawImGuizmo(camera, &transformNode);
+	}
+	ui.End();
+}
+#endif
 //--------------------------------------------------------------
 void ofxSurfing3dText::startup() {
 	ofLogNotice("ofxSurfing3dText") << "startup()";
@@ -327,7 +435,7 @@ void ofxSurfing3dText::startup() {
 
 	if (!b) {
 		ofLogNotice("ofxSurfing3dText") << "No settings files found!";
-		//	doResetTransform();
+		//doResetTransform();
 	}
 }
 
@@ -459,7 +567,7 @@ void ofxSurfing3dText::updateAnimMode0() {
 
 	float t = ofGetElapsedTimef();
 	float a = ofMap(powerDeform, 0, 1, 0.4, 1, true);
-	a *= MAX(0.1,control1 * 10);
+	a *= MAX(0.1, control1 * 10);
 
 	float et = a * t;
 
@@ -498,17 +606,15 @@ void ofxSurfing3dText::drawGui() {
 
 	ofDisableDepthTest();
 
-	guiManager.draw();
+	if (bGui_ofxGui) {
+		guiManager.draw();
 
-	if (filesBrowserFonts.bGui) {
-		//filesBrowserFonts.drawGui();
 		filesBrowserFonts.drawHelp(true);
-		auto r = guiManager.getShapePanels();
-		float padx = SURFING__OFXGUI__PAD_BETWEEN_PANELS * 2;
-		padx += 1;
-		glm::vec2 p = r.getTopRight() + glm::vec2(padx, 0);
-		filesBrowserFonts.drawPreview(p.x, p.y);
+		ofRectangle r = guiManager.getShapePanels();
+		filesBrowserFonts.drawPreviewRightToRect(r);
 	}
+
+	//--
 
 	drawHelp();
 }
@@ -640,7 +746,7 @@ void ofxSurfing3dText::drawMeshesMode1() {
 	ofPushStyle();
 
 	float t = ofGetElapsedTimef();
-	
+
 	t *= control1 * 10;
 
 	float ow = 50;
@@ -1166,4 +1272,8 @@ void ofxSurfing3dText::keyPressed(int key) {
 		extrusion -= 10;
 		if (extrusion < extrusion.getMin()) extrusion = extrusion.getMin();
 	}
+
+#ifdef SURFING__USE__IMGUI
+	surfingImGuizmo.keyPressed(key);
+#endif
 }

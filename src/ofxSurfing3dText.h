@@ -1,19 +1,24 @@
 /*
 	TODO
-
-	add sceneManager 
-		with public methods to pbr
-		add material
-		begin/end material
+	fix link scale vs scale normalized
+	fix link scale to power scale 
+	fix node rotator to euler deg
 */
 
 //--
 
-// NOTE: Path to mesh code copied from OF core
+// Optional: UI
+// Uncomment to use ImGui!
+// ofxGui panel will be there but hidden!
+#define SURFING__USE__IMGUI
+
+//--
+
+// NOTE: Path to mesh original code copied from OF core
 // openFrameworks\examples\3d\pathsToMeshesExample
 
-// OPTIONAL:
-//#define SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
+// Optional:
+//#define SURFING__USE__LINE_WIDTH_FOR_FONT_INTERLETTER
 
 #pragma once
 
@@ -22,6 +27,11 @@
 #include "SurfingFilesBrowserFonts.h"
 #include "SurfingTransformNode.h"
 #include "ofxSurfingHelpersLite.h"
+
+#ifdef SURFING__USE__IMGUI
+	#include "ofxSurfingImGui.h"
+	#include "SurfingImGuizmo.h"
+#endif
 
 class MeshNode {
 public:
@@ -79,6 +89,20 @@ public:
 
 	void setup();
 	void setupFontsBowser(string path);
+
+	// Camera
+		void setup(ofCamera & camera_); // use only one setup method! don't call two setup methods!
+public:
+	void setCameraPtr(ofCamera & camera_); //don't need use when camera is passed to setup function!
+	void setCameraPtr(ofCamera * camera_); //don't need use when camera is passed to setup function!
+
+	// For getting camera from the parent class/ofApp
+	// (TODO: Currently is not required bc the cam is instantiated on there!)
+	ofCamera * getOfCameraPtr();
+	ofEasyCam * getOfEasyCamPtr();
+
+private:
+	ofCamera * camera;
 
 private:
 	bool bFlagSetupFont = false;
@@ -142,18 +166,18 @@ private:
 
 	void Changed(ofAbstractParameter & e);
 	void ChangedFont(ofAbstractParameter & e);
-	void ChangedTransform(ofAbstractParameter & e);
+	//void ChangedTransform(ofAbstractParameter & e);
 
 public:
 	glm::vec3 getBoundBoxShape() const;
 
 public:
-	ofParameterGroup paramsPreset; 
+	ofParameterGroup paramsPreset;
 	// some selected params to be used on presets manager or user/UI
 	// to simplify or adapt to our workflow: select only what we want to store,
-	ofParameterGroup paramsPresetFont; 
+	ofParameterGroup paramsPresetFont;
 
-	ofParameterGroup parameters;//exposed to UI and settings
+	ofParameterGroup parameters; //exposed to UI and settings
 
 	ofParameterGroup paramsFile;
 	ofEventListener listenerIndex; //get class internal index changed
@@ -181,7 +205,7 @@ public:
 	ofParameter<void> vResetFont;
 	ofParameter<ofFloatColor> color;
 
-#ifdef SURFING__USE_LINE_WIDTH_FOR_FONT_INTERLETTER
+#ifdef SURFING__USE__LINE_WIDTH_FOR_FONT_INTERLETTER
 	ofParameter<int> lineWidth;
 #endif
 
@@ -208,6 +232,19 @@ public:
 	ofxPanel gui;
 
 private:
+	ofParameter<bool> bGui_ofxGui { "ofxGui", true };
+
+public:
+	void setEnableOfxGui(bool b) { bGui_ofxGui = b; }
+
+#ifdef SURFING__USE__IMGUI
+	ofxSurfingGui ui;
+	void setupImGui();
+	void drawImGui();
+	SurfingImGuizmo surfingImGuizmo;
+#endif
+
+private:
 	SurfingOfxGuiPanelsManager guiManager;
 
 	string path = "ofxSurfing3dText_Settings.json";
@@ -223,7 +260,6 @@ private:
 
 public:
 	TransformNode transformNode;
-
 	SurfingFilesBrowserFonts filesBrowserFonts;
 	ofParameter<int> & getIndexParam() { return filesBrowserFonts.indexFile; }
 
@@ -231,8 +267,10 @@ public:
 
 private:
 	string namePresetParams = "TEXT_PRESET";
-	public:
-		string getName() const {
-			return namePresetParams;
+
+public:
+	string getName() const {
+		return namePresetParams;
 	}
+
 };

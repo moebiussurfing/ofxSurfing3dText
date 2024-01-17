@@ -11,5 +11,12 @@
 ## 3_Example_Text_PBR_Presets
 ![](3_Example_Text_PBR_Presets/Capture.PNG)
 
+## 4_Example_Text_ImGui
+![](4_Example_Text_ImGui/Capture.PNG)
+
 ### Requires:
-https://github.com/moebiussurfing/ofxSurfingPBR/tree/develop
+https://github.com/moebiussurfing/ofxSurfingHelpersLite  
+https://github.com/moebiussurfing/ofxSurfingPBR/tree/develop  
+https://github.com/moebiussurfing/ofxSurfingPresetsLite  
+https://github.com/moebiussurfing/ofxImGuizmo  
+https://github.com/moebiussurfing/ofxSurfingImGui  

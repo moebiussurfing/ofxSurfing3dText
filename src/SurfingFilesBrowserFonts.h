@@ -20,7 +20,7 @@
 class SurfingFilesBrowserFonts : public SurfingFilesBrowser {
 public:
 	SurfingFilesBrowserFonts() {
-		ofLogNotice("ofxSurfingPBR") << "SurfingFilesBrowserFonts:SurfingFilesBrowserFonts()";//crash?
+		ofLogNotice("ofxSurfingPBR") << "SurfingFilesBrowserFonts:SurfingFilesBrowserFonts()"; //crash?
 
 		//paramsUser.setName("FONTS_BROWSER");
 		////paramsUser.add(bGui);
@@ -29,7 +29,7 @@ public:
 	}
 
 	~SurfingFilesBrowserFonts() {
-		ofLogNotice("ofxSurfingPBR") << "SurfingFilesBrowserFonts:~SurfingFilesBrowserFonts()";//crash?
+		ofLogNotice("ofxSurfingPBR") << "SurfingFilesBrowserFonts:~SurfingFilesBrowserFonts()"; //crash?
 	}
 
 private:
@@ -97,7 +97,7 @@ public:
 	ofParameter<string> pathFonts;
 
 	ofParameter<bool> bDrawPreview { "Draw Previews", true };
-	ofParameter<bool> bModeAutoload { "Mode Autoload", true };//to be used externally
+	ofParameter<bool> bModeAutoload { "Mode Autoload", true }; //to be used externally
 
 	//ofParameterGroup paramsUser;
 
@@ -135,5 +135,13 @@ public:
 
 	void drawPreview(int x, int y) {
 		fontsBook.drawPreviews(x, y);
+	}
+
+	void drawPreviewRightToRect(ofRectangle r) {
+		if (!bGui) return;
+		float padx = SURFING__OFXGUI__PAD_BETWEEN_PANELS * 2;
+		padx += 1;
+		glm::vec2 p = r.getTopRight() + glm::vec2(padx, 0);
+		drawPreview(p.x, p.y);
 	}
 };
