@@ -363,8 +363,6 @@ void ofxSurfing3dText::setupGui() {
 void ofxSurfing3dText::setupImGui() {
 	ofLogNotice("ofxSurfing3dText") << "setupImGui()";
 
-	//surfingImGuizmo.setup();
-
 	//ui.setEnableHelpInternal(true);
 
 	ui.addWindowSpecial(bGui);
