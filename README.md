@@ -14,9 +14,9 @@
 ## 4_Example_Text_ImGui
 ![](4_Example_Text_ImGui/Capture.PNG)
 
-### Requires:
+### Requires: (Check each example `addons.make`!)
 https://github.com/moebiussurfing/ofxSurfingHelpersLite  
 https://github.com/moebiussurfing/ofxSurfingPBR/tree/develop  
 https://github.com/moebiussurfing/ofxSurfingPresetsLite  
-https://github.com/moebiussurfing/ofxImGuizmo  
 https://github.com/moebiussurfing/ofxSurfingImGui  
+https://github.com/moebiussurfing/ofxImGuizmo  
