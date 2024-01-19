@@ -390,12 +390,15 @@ void ofxSurfing3dText::drawImGui() {
 		//	//ImVec2 size_max = ImVec2(-1, -1);
 		//	//ImGui::SetNextWindowSizeConstraints(size_min, size_max);
 		//}
+
+		// 3d Text
 		if (ui.BeginWindowSpecial(bGui)) {
 			SurfingGuiTypes t = OFX_IM_TOGGLE_MEDIUM;
 			ui.Add(transformNode.bGui, t);
 			ui.Add(filesBrowserFonts.bGui, t);
 			ui.Add(bHelp, OFX_IM_TOGGLE_ROUNDED_SMALL);
 			//ui.AddLinekdWindowsToggle();
+			ui.Add(bGui_ofxGui);
 
 			ui.AddSpacingSeparated();
 
@@ -410,21 +413,26 @@ void ofxSurfing3dText::drawImGui() {
 			ui.EndWindowSpecial();
 		}
 
+		// Node
 		if (ui.BeginWindowSpecial(transformNode.bGui)) {
 			ui.AddGroup(transformNode.parameters);
-			#if 0
+	#if 0
 			ui.AddSpacingBigSeparated();
 			ui.AddGroup(transformNode.paramsPreset);
-			#endif
+	#endif
 
 			ui.EndWindowSpecial();
 		}
 
+		// Fonts Browser
 		if (ui.BeginWindowSpecial(filesBrowserFonts.bGui)) {
 			ui.AddGroup(filesBrowserFonts.parameters);
 
 			ui.EndWindowSpecial();
 		}
+
+		ofRectangle r = ui.getLastWindowRectangle();
+		filesBrowserFonts.drawPreviewRightToRect(r);
 
 		//--
 

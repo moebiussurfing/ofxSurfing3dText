@@ -41,8 +41,8 @@
 #endif
 
 // Range for rotate
-//#define SURFING__MAX_DEGREE 360
-#define SURFING__MAX_DEGREE 180
+#define SURFING__MAX_DEGREE 360
+//#define SURFING__MAX_DEGREE 180
 
 //#define SURFING_TRANSFORM_NOSE___USE__NORMALIZED_CONTROLS
 
@@ -83,8 +83,7 @@ public:
 	ofParameterGroup paramsScaleNormalized;
 #endif
 
-	//exposed to the gui and settings
-	ofParameterGroup parameters; 
+	ofParameterGroup parameters; //exposed to the gui and settings
 	ofParameterGroup paramsOfNode;
 	ofParameterGroup paramsResets;
 

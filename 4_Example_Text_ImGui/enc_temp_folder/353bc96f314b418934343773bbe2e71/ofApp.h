@@ -8,8 +8,8 @@ class ofApp : public ofBaseApp {
 public:
 	void setup();
 	void update();
-	
 	void draw();
+
 	void drawScene();
 	void drawGui();
 	bool bGui = true;
