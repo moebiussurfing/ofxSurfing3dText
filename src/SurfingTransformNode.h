@@ -64,27 +64,34 @@ class TransformNode : public ofNode {
 	// Main ofParameter controls
 	// Exposed to gui and "redirected" to ofNode's internals!
 public:
-	ofParameter<glm::vec3> position { "Position", glm::vec3(0),
+	ofParameter<glm::vec3> positionParameter { "Position", glm::vec3(0),
 		glm::vec3(-unitSize), glm::vec3(unitSize) };
 
-	ofParameter<glm::vec3> scale { "Scale", glm::vec3(1),
+#ifdef SURFING_TRANSFORM_NOSE___USE__NORMALIZED_CONTROLS
+	ofParameter<glm::vec3> scaleParameter { "Scale", glm::vec3(1),
 		glm::vec3(1), glm::vec3(scaleNormalizedUnit) };
+#else
+	ofParameter<glm::vec3> scaleParameter { "Scale", glm::vec3(1),
+		glm::vec3(1), glm::vec3(10) };
+#endif
+	glm::vec3 scaleParameter_ = { -1, -1, -1 }; //previous value
 
-	ofParameter<glm::vec3> orientationEuler { "Orientation Euler", glm::vec3(0),
+	ofParameter<glm::vec3> orientationEulerParameter { "Orientation Euler", glm::vec3(0),
 		glm::vec3(-(float)SURFING__MAX_DEGREE), glm::vec3((float)SURFING__MAX_DEGREE) };
+
+	ofParameter<bool> bScaleLinkAxis { "ScaleLinkAxis", true }; //TODO
 
 #ifdef SURFING_TRANSFORM_NOSE___USE__NORMALIZED_CONTROLS
 	// Extra normalized controls
 	// intended to adapt to our scene and objects dimensions.
 	ofParameter<float> scaleNormalized { "Scale Norm", 0, -1.f, 1.f };
 	ofParameter<int> scaleNormalizedPow { "Scale Pow", scaleNormalizedPowMax / 2, 1, scaleNormalizedPowMax };
-	ofParameter<bool> bScaleLinkAxis { "ScaleLinkAxis", true }; //TODO
 	ofParameter<glm::vec3> positionNormalized { "Position Normalized", glm::vec3(0), glm::vec3(-1), glm::vec3(1) };
 	ofParameterGroup paramsScaleNormalized;
 #endif
 
 	//exposed to the gui and settings
-	ofParameterGroup parameters; 
+	ofParameterGroup parameters;
 	ofParameterGroup paramsOfNode;
 	ofParameterGroup paramsResets;
 
@@ -97,7 +104,7 @@ public:
 	ofParameter<void> vReset { "Reset" };
 	ofParameter<void> vResetScale { "Reset Scale" };
 	ofParameter<void> vResetPosition { "Reset Position" };
-	ofParameter<void> vResetOrientation { "Reset Rotation" };
+	ofParameter<void> vResetOrientation { "Reset Orientation" };
 
 	ofParameter<bool> bDraw { "Draw", true };
 	ofParameter<bool> bDebug { "Debug", false };
@@ -141,6 +148,10 @@ private:
 		path = name + pathSuffix;
 
 		gui.setup(paramsPreset);
+	}
+
+	void startup() {
+		ofLogNotice("TransformNode") << "startup()";
 
 		if (bEnableSettings) {
 			callback_t f = std::bind(&TransformNode::save, this);
@@ -151,15 +162,18 @@ private:
 	}
 
 	void save() {
-		ofLogNotice("TransformNode") << "save -> " << path;
+		ofLogNotice("TransformNode") << "save > " << path;
+
 		ofxSurfing::saveSettings(parameters, path);
 	}
 
 	bool load() {
-		ofLogNotice("TransformNode") << "load -> " << path;
-		if (bEnableSettings) autoSaver.pause();
+		ofLogNotice("TransformNode") << "load > " << path;
+
+		autoSaver.pause();
 		bool b = ofxSurfing::loadSettings(parameters, path);
-		if (bEnableSettings) autoSaver.start();
+		autoSaver.start();
+
 		return b;
 	}
 
@@ -175,7 +189,6 @@ private:
 
 	void Changed(ofAbstractParameter & e) {
 		string name = e.getName();
-
 		ofLogVerbose("TransformNode") << "Changed: " << name << ": " << e;
 
 		if (bEnableSettings)
@@ -189,8 +202,6 @@ private:
 public:
 	TransformNode() {
 		ofLogNotice("TransformNode") << "Constructor";
-
-		//setup();
 
 		ofAddListener(ofEvents().update, this, &TransformNode::update);
 		ofAddListener(parameters.parameterChangedE(), this, &TransformNode::Changed);
@@ -215,16 +226,16 @@ public:
 	void refreshGui() {
 		ofLogNotice("TransformNode") << "refreshGui()";
 
-		gui.getGroup(paramsOfNode.getName()).getGroup(scale.getName()).minimize();
-		gui.getGroup(paramsOfNode.getName()).getGroup(position.getName()).minimize();
+		gui.getGroup(paramsOfNode.getName()).getGroup(scaleParameter.getName()).minimize();
+		gui.getGroup(paramsOfNode.getName()).getGroup(positionParameter.getName()).minimize();
 		gui.getGroup(paramsResets.getName()).minimize();
 	}
 
 	void refreshGuiUserParams(ofxPanel & gui_, ofxGuiGroup & group_) {
 		ofLogNotice("TransformNode") << "refreshGui(ofxPanel,ofxGuiGroup)";
 
-		group_.getGroup(paramsOfNode.getName()).getGroup(scale.getName()).minimize();
-		group_.getGroup(paramsOfNode.getName()).getGroup(position.getName()).minimize();
+		group_.getGroup(paramsOfNode.getName()).getGroup(scaleParameter.getName()).minimize();
+		group_.getGroup(paramsOfNode.getName()).getGroup(positionParameter.getName()).minimize();
 		group_.getGroup(paramsResets.getName()).minimize();
 	}
 
@@ -234,7 +245,9 @@ private:
 	bool bEnableSettings = true;
 
 public:
-	void setEnableSettings(bool b) { //use to disable when settings are handled externaly. as when using a transform vector for multiple objects..
+	// use to disable when settings are handled externaly.
+	// as when using a transform vector for multiple objects..
+	void setEnableSettings(bool b) {
 		bEnableSettings = b;
 	}
 
@@ -249,27 +262,39 @@ private:
 	std::unique_ptr<ofEventListener> e_scaleNormalized;
 	std::unique_ptr<ofEventListener> e_scaleNormalizedPow;
 #endif
-	std::unique_ptr<ofEventListener> e_rotationEulerChanged; //TODO
+
+	//std::unique_ptr<ofEventListener> e_rotationEulerChanged; //TODO
 
 	//--
 
 public:
 	void setup() {
+		ofLogNotice("ofxSurfing3dText") << "setup()";
 
-		// parameters
+		startupParameters();
+		setupCallbacks();
+		setupSettings();
+		startup();
+
+		bDoneSetup = true;
+	}
+
+	//--------------------------------------------------------------
+	void startupParameters() {
+		ofLogNotice("ofxSurfing3dText") << "startupParameters()";
 
 		parameters.setName("TRANSFORM");
 
 		paramsOfNode.setName("ofNode");
-		paramsOfNode.add(position);
-		paramsOfNode.add(orientationEuler);
-		paramsOfNode.add(scale);
+		paramsOfNode.add(positionParameter);
+		paramsOfNode.add(orientationEulerParameter);
+		paramsOfNode.add(scaleParameter);
+		paramsOfNode.add(bScaleLinkAxis); //TODO
 
 #ifdef SURFING_TRANSFORM_NOSE___USE__NORMALIZED_CONTROLS
 		paramsScaleNormalized.setName("Scale Normalized");
 		paramsScaleNormalized.add(scaleNormalized);
 		paramsScaleNormalized.add(scaleNormalizedPow);
-		paramsScaleNormalized.add(bScaleLinkAxis); //TODO
 #endif
 
 		parameters.add(bDraw);
@@ -282,20 +307,12 @@ public:
 		parameters.add(paramsOfNode);
 
 		paramsResets.setName("Resets");
-		paramsResets.add(vResetScale);
 		paramsResets.add(vResetPosition);
 		paramsResets.add(vResetOrientation);
+		paramsResets.add(vResetScale);
 		paramsResets.add(vReset);
 		paramsResets.setSerializable(false);
 		parameters.add(paramsResets);
-
-		setupCallbacks();
-
-		//--
-
-		setupSettings();
-
-		bDoneSetup = true;
 	}
 
 	//--
@@ -327,10 +344,6 @@ public:
 	}
 #endif
 
-	glm::vec3 getOrientationEuler() const {
-		return orientationEuler;
-	}
-
 	//--
 
 	void doReset() {
@@ -348,8 +361,8 @@ public:
 	}
 
 	void doResetOrientation() {
-		setOrientation(glm::vec3(0));
-		//orientationEuler = glm::vec3(0);
+		orientationEulerParameter = glm::vec3(0, 0, 0);
+		//setOrientation(glm::vec3(0,0,0));
 	}
 
 	void doResetScale() {
@@ -368,9 +381,9 @@ public:
 
 public:
 	void setupCallbacks() {
-		position.addListener(this, &TransformNode::_setPosition);
-		orientationEuler.addListener(this, &TransformNode::_setOrientation);
-		scale.addListener(this, &TransformNode::_setScale);
+		positionParameter.addListener(this, &TransformNode::ChangedPositionParameter);
+		orientationEulerParameter.addListener(this, &TransformNode::ChangedOrientationEulerParameter);
+		scaleParameter.addListener(this, &TransformNode::ChangedScaleParameter);
 
 		//--
 
@@ -394,14 +407,14 @@ public:
 
 			//adapt param range
 			scaleNormalizedUnit = scaleNormalizedRatio * scaleNormalizedPow;
-			scale.setMax(glm::vec3(scaleNormalizedUnit, scaleNormalizedUnit, scaleNormalizedUnit));
+			scaleParameter.setMax(glm::vec3(scaleNormalizedUnit, scaleNormalizedUnit, scaleNormalizedUnit));
 
 			refreshScaleFromNormalized();
 		}));
 #endif
 
-		e_rotationEulerChanged = std::make_unique<ofEventListener>(orientationEuler.newListener([this](glm::vec3) {
-		}));
+		//e_rotationEulerChanged = std::make_unique<ofEventListener>(orientationEulerParameter.newListener([this](glm::vec3) {
+		//}));
 
 		//--
 
@@ -415,7 +428,6 @@ public:
 			doResetPosition();
 		}));
 
-
 		e_vResetScale = std::make_unique<ofEventListener>(vResetScale.newListener([this](void) {
 			doResetScale();
 		}));
@@ -426,53 +438,72 @@ public:
 
 	//--
 
-	// Update ofNode
+	// Params has changed
+	// so we update ofNode from the params!
 
-	void _setPosition(glm::vec3 & v) {
-		ofLogNotice(__FUNCTION__);
+	void ChangedPositionParameter(glm::vec3 & v) {
+		if (bAttendingPosition) return;
 
+		ofLogNotice(__FUNCTION__) << v;
+
+		bAttendingPosition = true;
 		setPosition(v);
+		bAttendingPosition = false;
 
 #ifdef SURFING_TRANSFORM_NOSE___USE__NORMALIZED_CONTROLS
 		refreshPositionToNormalized();
 #endif
 	}
 
-	void _setScale(glm::vec3 & v) {
+	void ChangedScaleParameter(glm::vec3 & v) {
 		if (bAttendingScale) return;
+
 		ofLogNotice(__FUNCTION__) << v;
 
-#ifdef SURFING_TRANSFORM_NOSE___USE__NORMALIZED_CONTROLS
-		if (bScaleLinkAxis)
-#endif
-		{
-			bAttendingScale = true;
+		// link all axis to which changed!
+		if (bScaleLinkAxis) {
+			if (scaleParameter.get() != scaleParameter_) {
+				glm::vec3 s;
+				if (scaleParameter.get().x != scaleParameter_.x)
+					s = glm::vec3(scaleParameter.get().x);
+				else if (scaleParameter.get().y != scaleParameter_.y)
+					s = glm::vec3(scaleParameter.get().y);
+				else if (scaleParameter.get().z != scaleParameter_.z)
+					s = glm::vec3(scaleParameter.get().z);
 
-			//TODO: fix lock all axis to x
-			glm::vec3 s = glm::vec3(scale.get().x);
+				bAttendingScale = true;
+				scaleParameter.set(s);
+				bAttendingScale = false;
 
-			//glm::vec3 s = glm::vec3(v.x, v.x, v.x);
-			scale.set(s);
-//v = s;
-#if 0
-			ofLogNotice(__FUNCTION__) << "s:" << s;
-			ofLogNotice(__FUNCTION__) << "v:" << v;
-			ofLogNotice(__FUNCTION__) << "scale:" << scale;
-#endif
+				bAttendingScale = true;
+				setScale(s);
+				bAttendingScale = false;
 
-			bAttendingScale = false;
-
-			setScale(s);
-			return;
+				scaleParameter_ = scaleParameter.get();//store previous
+			}
 		}
 
-		setScale(v);
+		else {
+			bAttendingScale = true;
+			setScale(v);
+			bAttendingScale = false;
+		}
 	}
 
-	void _setOrientation(glm::vec3 & v) {
-		ofLogNotice(__FUNCTION__);
+	void ChangedOrientationEulerParameter(glm::vec3 & v) {
+		if (bAttendingOrientation) return;
 
-		setOrientation(v);
+		auto o1 = orientationEulerParameter.get();
+		auto o2 = getOrientationEuler();
+		bool bDiff = (o1 != o2);
+
+		if (bDiff) {
+			ofLogNotice(__FUNCTION__) << orientationEulerParameter.get();
+
+			bAttendingOrientation = true;
+			setOrientation(v);
+			bAttendingOrientation = false;
+		}
 	}
 
 	//--
@@ -480,11 +511,14 @@ public:
 	// Update ofParams from ofNode
 
 	void onPositionChanged() override {
-		if (position.get() != getPosition()) {
-			ofLogNotice(__FUNCTION__);
+		if (bAttendingPosition) return;
 
-			position.set(getPosition());
-			//position.setWithoutEventNotifications(getPosition());
+		if (positionParameter.get() != getPosition()) {
+			ofLogNotice(__FUNCTION__) << getPosition();
+
+			bAttendingPosition = true;
+			positionParameter.set(getPosition());
+			bAttendingPosition = false;
 
 #ifdef SURFING_TRANSFORM_NOSE___USE__NORMALIZED_CONTROLS
 			refreshPositionToNormalized();
@@ -495,32 +529,57 @@ public:
 	void onScaleChanged() override {
 		if (bAttendingScale) return;
 
-		if (scale.get() != getScale()) {
-			ofLogNotice(__FUNCTION__);
+		if (scaleParameter.get() != getScale()) {
+			ofLogNotice(__FUNCTION__) << getScale();
 
-			scale.set(getScale());
-		}
+			bAttendingScale = true;
+			scaleParameter.set(getScale());
+			bAttendingScale = false;
 
 #ifdef SURFING_TRANSFORM_NOSE___USE__NORMALIZED_CONTROLS
-		//TODO: apply to normalized scale
-		refreshScaleToNormalized();
+			refreshScaleToNormalized();
 #endif
+		}
 	}
 
 	void onOrientationChanged() override {
-		bool bDiff = orientationEuler.get() != getOrientationEuler();
+		if (bAttendingOrientation) return;
+
+#if 1
+		auto o1 = orientationEulerParameter.get();
+		auto o2 = getOrientationEuler();
+		bool bDiff = (o1 != o2);
+#else
 		// compare the two objects with an epsilon of 0.001
-		//bool bDiff = glm::all(glm::epsilonEqual(orientationEuler.get(), getOrientationEuler(), 0.001f));
+		bool bDiff = glm::all(glm::epsilonEqual(orientationEulerParameter.get(), getOrientationEuler(), 0.001f));
+#endif
 
 		if (bDiff) {
-			ofLogNotice(__FUNCTION__);
+			ofLogNotice(__FUNCTION__) << getOrientationEuler();
 
-			//ofLogNotice() << "orientationEuler:" << orientationEuler;
-			//ofLogNotice() << "getOrientationEuler():" << getOrientationEuler();
+			//ofLogNotice() << "orientationEulerParameter:" << o1;
+			//ofLogNotice() << "getOrientationEuler():" << o2;
 
-			//TODO
 			refreshOrientationEulerFromOfNode();
 		}
+	}
+
+	//----
+
+	void refreshOrientationEulerFromOfNode() {
+		ofLogNotice(__FUNCTION__) << getOrientationEuler();
+
+		bAttendingOrientation = true;
+		orientationEulerParameter.set(getOrientationEuler());
+		bAttendingOrientation = false;
+	}
+
+	void refreshOrientationNodeFromOfEuler() {
+		ofLogNotice(__FUNCTION__) << orientationEulerParameter.get();
+
+		bAttendingOrientation = true;
+		setOrientation(orientationEulerParameter.get());
+		bAttendingOrientation = false;
 	}
 
 	//--
@@ -534,17 +593,17 @@ public:
 		float y = ofMap(positionNormalized.get().y, -1, 1, -u, u, true);
 		float z = ofMap(positionNormalized.get().z, -1, 1, -u, u, true);
 		setPosition(glm::vec3(x, y, z));
-		_setPosition(glm::vec3(x, y, z));
+		ChangedPositionParameter(glm::vec3(x, y, z));
 	}
 
 	void refreshPositionToNormalized() {
 		ofLogNotice(__FUNCTION__);
 
 		//apply to normalized
-		const float u = position.getMax().x; // unit assumed the same for the three axis
-		float x = ofMap(position.get().x, -u, u, -1, 1, true);
-		float y = ofMap(position.get().y, -u, u, -1, 1, true);
-		float z = ofMap(position.get().z, -u, u, -1, 1, true);
+		const float u = positionParameter.getMax().x; // unit assumed the same for the three axis
+		float x = ofMap(positionParameter.get().x, -u, u, -1, 1, true);
+		float y = ofMap(positionParameter.get().y, -u, u, -1, 1, true);
+		float z = ofMap(positionParameter.get().z, -u, u, -1, 1, true);
 
 		float px = positionNormalized.get().x;
 		float py = positionNormalized.get().y;
@@ -567,7 +626,7 @@ public:
 			s = ofMap(scaleNormalized, 0, -1, scaleNormalizedPow, scaleNormalizedPow / scaleNormalizedRatio, true);
 		}
 		setScale(s, s, s);
-		_setScale(glm::vec3(s, s, s));
+		ChangedScaleParameter(glm::vec3(s, s, s));
 	}
 
 	void refreshScaleToNormalized() {
@@ -575,10 +634,10 @@ public:
 
 		//TODO
 		float sx = 0;
-		float s = scale.get().x;
-		const float u = scale.getMax().x; // unit assumed the same for the three axis
+		float s = scaleParameter.get().x;
+		const float u = scaleParameter.getMax().x; // unit assumed the same for the three axis
 
-		sx = ofMap(s, scale.getMin().x, scale.getMax().x, -1, 1, true);
+		sx = ofMap(s, scaleParameter.getMin().x, scaleParameter.getMax().x, -1, 1, true);
 
 		//if (s == 0) {
 		//	sx = 0;
@@ -595,22 +654,6 @@ public:
 		}
 	}
 #endif
-
-	void refreshOrientationEulerFromOfNode() {
-		ofLogNotice(__FUNCTION__);
-
-		////TODO
-		//return;
-
-		//bAttendingOrientation = true;
-
-		orientationEuler = getOrientationEuler();
-
-		//glm::vec3 r = orientationEuler.get();
-		//_setOrientation(r);
-
-		//bAttendingOrientation = false;
-	}
 
 	//--
 
