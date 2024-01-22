@@ -17,7 +17,6 @@ public:
 	void windowResized(int w, int h);
 
 	ofxSurfingPBR pbr;
-	ofEasyCam camera;
 	void renderScene();
 	void drawMyScene();
 

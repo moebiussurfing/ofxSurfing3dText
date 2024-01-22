@@ -7,10 +7,12 @@
 
 //--
 
+#if 1
 // Optional: UI
 // Uncomment to use ImGui!
 // ofxGui panel will be there but hidden!
 #define SURFING__USE__IMGUI
+#endif
 
 //--
 
@@ -21,7 +23,6 @@
 //#define SURFING__USE__LINE_WIDTH_FOR_FONT_INTERLETTER
 
 #pragma once
-
 #include "ofMain.h"
 
 #include "SurfingFilesBrowserFonts.h"
@@ -263,14 +264,14 @@ public:
 	SurfingFilesBrowserFonts filesBrowserFonts;
 	ofParameter<int> & getIndexParam() { return filesBrowserFonts.indexFile; }
 
-	void setNamePresetParams(string name) { namePresetParams = name; };
+	void setName(string name_) { name = name_; };
 
 private:
-	string namePresetParams = "TEXT_PRESET";
+	string name = "";
 
 public:
 	string getName() const {
-		return namePresetParams;
+		return name;
 	}
 
 };

@@ -1,5 +1,6 @@
 ofxGui
 ofxSurfing3dText
+ofxSurfingCameraSimple
 ofxSurfingHelpersLite
 ofxSurfingPBR
 ofxSurfingPresetsLite

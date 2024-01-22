@@ -1,8 +1,12 @@
 #pragma once
-
 #include "ofMain.h"
 
 #include "ofxSurfing3dText.h"
+/* 
+Must enable
+#define SURFING__USE__IMGUI
+at the top of the ofxSurfing3dText.h file!
+*/
 
 class ofApp : public ofBaseApp {
 public:

@@ -13,13 +13,14 @@ void ofApp::setup() {
 
 	// Text
 
+	//text3d.setName("3D_TEXT");
 	text3d.setup();
 
 	//--
 
 	// Pbr
 
-	pbr.setup(camera);
+	pbr.setup();
 	callback_t f = std::bind(&ofApp::renderScene, this);
 	pbr.setFunctionRenderScene(f);
 	pbr.bDrawTestScene = false;

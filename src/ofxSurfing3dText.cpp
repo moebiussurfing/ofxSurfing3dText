@@ -157,6 +157,17 @@ bool ofxSurfing3dText::load() {
 void ofxSurfing3dText::setupParams() {
 	ofLogNotice("ofxSurfing3dText") << "setupParams()";
 
+	if (name == "") {
+		name = "3D_TEXT";
+	}
+	parameters.setName(name);
+	string n = "";
+	n += "UI ";
+	n += name;
+	bGui.set(n, true);
+
+	//--
+
 	pathFont.set("P", "assets/fonts/NotoSansMono-Regular.ttf");
 	nameFont.set("N", "NotoSansMono-Regular.ttf"); //hardcoded
 
@@ -209,10 +220,6 @@ void ofxSurfing3dText::setupParams() {
 	paramsDebug.add(bDrawBBoxBounds);
 	paramsDraw.add(paramsDebug);
 
-	parameters.setName("3D_TEXT");
-	string n = parameters.getName();
-	//n = "UI " + n;
-	bGui.set(n, true);
 	parameters.add(paramsDraw);
 	//parameters.add(filesBrowserFonts.bGui);
 
@@ -257,10 +264,12 @@ void ofxSurfing3dText::setupParams() {
 
 	paramsInternal.setName("Internal");
 	paramsInternal.add(bGui);
+
 #ifdef SURFING__USE__IMGUI
 	surfingImGuizmo.setup("NodeGizmo");
 	paramsInternal.add(surfingImGuizmo.parameters);
 #endif
+
 	parameters.add(paramsInternal);
 
 	parameters.add(bDebug);
@@ -315,7 +324,7 @@ void ofxSurfing3dText::setupParams() {
 void ofxSurfing3dText::setupParamsPreset() {
 	ofLogNotice("ofxSurfing3dText") << "setupParamsPreset()";
 
-	paramsPreset.setName(namePresetParams);
+	paramsPreset.setName(name);
 
 	//font/letters
 	paramsPresetFont.setName("Font");

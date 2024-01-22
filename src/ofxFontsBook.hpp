@@ -45,11 +45,11 @@ public:
 		//	parameters.add(bDrawPreviews);
 		//	parameters.add(indexFont);
 		//	parameters.add(sizeFont);
-		
+
 		float wmax = 0;
 		float hmax = 0;
 
-		#if 0
+	#if 0
 		listenerSizeFont = sizeFont.newListener([this](float & v) {
 			ofLogNotice("ofxFontsBook") << "sizeFont: " << v;
 
@@ -59,7 +59,7 @@ public:
 
 			autoloadFontsFromDir();
 		});
-		#endif
+	#endif
 	}
 #endif
 
@@ -111,11 +111,11 @@ public:
 
 		if (fontDir.size() == 0) ofLogError("ofxFontsBook") << "Path " << path_ << " not found!";
 
-		#if 1
+#if 1
 		size_t size = sizeFont;
-		#else
+#else
 		size_t size = 12;
-		#endif
+#endif
 
 		for (const auto & file : fontDir.getFiles()) {
 			std::string fontName = file.getBaseName();
@@ -182,9 +182,15 @@ public:
 		for (const auto & font : fonts_) {
 			std::string fontName = font.first.first;
 			string s = fontName;
-			//#if (SURFING__SHOW__FONT_SELECTED)
-			if (i == indexFont) s += " <";
-			//#endif
+
+			if (i == indexFont) {
+#if 0
+				s += " <";
+#else
+				s = "> " + s;
+#endif
+			}
+
 			font.second->drawString(s, x, y_);
 
 			auto bb = font.second->getStringBoundingBox(s, 0, 0);
