@@ -1,5 +1,9 @@
 #  WIP
 
+
+Converts `ofTrueTypeFonts` to a 3D `ofMesh` with a paired `ofNode`.
+Allows set extrusion size, font spacing, and other customizations.
+
 </br>
 
 ## 1_Example_Text
@@ -14,9 +18,11 @@
 ## 4_Example_Text_ImGui
 ![](4_Example_Text_ImGui/Capture.PNG)
 
-### Requires: (Check each example `addons.make`!)
+### Requeriments:
 https://github.com/moebiussurfing/ofxSurfingHelpersLite  
-https://github.com/moebiussurfing/ofxSurfingPBR/tree/develop  
+https://github.com/moebiussurfing/ofxSurfingPBR/develop  
 https://github.com/moebiussurfing/ofxSurfingPresetsLite  
 https://github.com/moebiussurfing/ofxSurfingImGui  
 https://github.com/moebiussurfing/ofxImGuizmo  
+
+#### Check each example `addons.make`!
