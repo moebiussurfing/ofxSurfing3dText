@@ -20,7 +20,7 @@ Allows set extrusion size, font spacing, and other customizations.
 
 ### Requeriments:
 https://github.com/moebiussurfing/ofxSurfingHelpersLite  
-https://github.com/moebiussurfing/ofxSurfingPBR/  
+https://github.com/moebiussurfing/ofxSurfingPBR  
 https://github.com/moebiussurfing/ofxSurfingPresetsLite  
 https://github.com/moebiussurfing/ofxSurfingImGui  
 https://github.com/moebiussurfing/ofxImGuizmo  
