@@ -25,4 +25,5 @@ https://github.com/moebiussurfing/ofxSurfingPresetsLite
 https://github.com/moebiussurfing/ofxSurfingImGui  
 https://github.com/moebiussurfing/ofxImGuizmo  
 
-#### Check each example `addons.make`!
+#### Check each example `addons.make`
+Each example requires his own dependencies/addons.
