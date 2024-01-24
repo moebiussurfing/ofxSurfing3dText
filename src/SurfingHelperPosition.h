@@ -8,13 +8,16 @@
 class PointCartesian {
 private:
 	// Define spherical to Cartesian conversion function
-	glm::vec3 sphericalToCartesian(float r, float theta, float phi) {
+	glm::vec3 sphericalToCartesian(float r, float phi, float theta) {
 		ofLogNotice("ofxSurfingPBR") << "sphericalToCartesian()";
 
+		theta = glm::radians(theta); // Convert to radians
+		phi = glm::radians(phi); // Convert to radians
+
 		return glm::vec3(
-			r * sin(theta) * cos(phi),
-			r * sin(theta) * sin(phi),
-			r * cos(theta));
+			r * sin(phi) * cos(theta),
+			r * cos(phi),
+			r * sin(phi) * sin(theta));
 	}
 
 	// Define Cartesian to spherical conversion function
@@ -22,18 +25,25 @@ private:
 		ofLogNotice("ofxSurfingPBR") << "cartesianToSpherical()";
 
 		float r = glm::length(cartesian);
-		float theta = acos(cartesian.z / r);
-		float phi = atan2(cartesian.y, cartesian.x);
+		float phi = glm::degrees(acos(cartesian.y / r)); // Convert to degrees
+		float theta = glm::degrees(atan2(cartesian.z, cartesian.x)); // Convert to degrees
 
+		// Ensure longitude is within -180 to 180 range
+		if (theta < -180.0f)
+			theta += 360.0f;
+		else if (theta > 180.0f)
+			theta -= 360.0f;
+
+		float diffEpsylon = 0.001f;
 		// Update spherical coordinates only if they differ from the current ones
-		if (abs(distance.get() - r) > 0.001) {
+		if (abs(distance.get() - r) > diffEpsylon) {
 			if (distance != r) distance.set(r);
 		}
-		if (abs(latitude.get() - theta) > 0.001) {
-			if (latitude != r) latitude.set(theta);
+		if (abs(latitude.get() - phi) > diffEpsylon) {
+			if (latitude != phi) latitude.set(phi);
 		}
-		if (abs(longitude.get() - phi) > 0.001) {
-			if (longitude != r) longitude.set(phi);
+		if (abs(longitude.get() - theta) > diffEpsylon) {
+			if (longitude != theta) longitude.set(theta);
 		}
 	}
 
@@ -99,8 +109,8 @@ private:
 		position.set("Cartesian", glm::vec3(), glm::vec3(-sz), glm::vec3(sz));
 		distance.set("Distance", 0, 0, sz);
 		//distance.set("Distance", 0, 0, std::sqrt(3) * sz);
-		longitude.set("Longitude", 0, -PI, PI);
-		latitude.set("Latitude", 0, -PI, PI);
+		longitude.set("Longitude", 0, -180, 180); // Changed from radians to degrees
+		latitude.set("Latitude", 0, -90, 90); // Changed from radians to degrees
 
 		string n = "Position";
 		if (name != "") n = name + " " + n;
