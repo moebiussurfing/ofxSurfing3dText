@@ -9,7 +9,7 @@
 
 #if 1
 // Optional: UI
-// Uncomment to use ImGui!
+// Set to 1 to use ImGui!
 // ofxGui panel will be there but hidden!
 #define SURFING__USE__IMGUI
 #endif
